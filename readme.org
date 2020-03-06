@@ -58,7 +58,7 @@ T Site Pair Identification
 
 * Contributions
 
-If there i something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
+If there is something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
 
 * Acknowledgments
 
