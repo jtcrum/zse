@@ -4,7 +4,12 @@ Jerry Crum
 3/6/2020
 
 * Description
-This is a package for automating structure generation and characterization of zeolites for computational chemistry. This package is built around the ASE atoms object, and thus requires installation of ASE (https://wiki.fysik.dtu.dk/ase/install.html). Numpy is also required. 
+This is a package for automating structure generation and characterization of zeolites for computational chemistry.
+
+* Requirements
+This package is built around the ASE atoms object, and thus requires installation of ASE (https://wiki.fysik.dtu.dk/ase/install.html).
+
+Numpy is also required. 
 
 * Installation
 
