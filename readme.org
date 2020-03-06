@@ -1,0 +1,64 @@
+* Zeolite Simulation Environment
+** Jerry Crum
+** 3/6/2020
+
+* Description
+This is a package for automating structure generation and characterization of zeolites for computational chemistry. This package is built around the ASE atoms object, and thus requires installation of ASE (https://wiki.fysik.dtu.dk/ase/install.html). Numpy is also required. 
+
+* Installation
+
+Clone this git repository into your PYTHONPATH (i.e. anaconda3/pkgs/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH. 
+
+* Current Modules
+
+** zse.substitute
+
+*** tsub(atoms,index,new_atom)
+
+This command will replace one atom in the zeolite framework with a new of your choosing. 
+
+\b{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\b{index}: index of the atom you would like to change into a new element.
+
+\b{new_atom}: symbol of the element you would like to change index into, must be string.
+
+** zse.protonate
+
+*** isolated(atoms,tatom,path='.')
+
+This command will enumerate all the possible structures of where a proton can bind around an isolated hetero atom inside the zeolite framework. Returns a trajectory of the possible structures (see examples for usage).
+
+\b{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\b{tatom}: symbol of the hetero atom you would like to protonate.
+
+\b{path}: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format. 
+
+** zse.rings
+
+*** get_rings(atoms, index, possible_rings)
+
+This command will list the size of the rings associated with an oxygen atom. It returns the three smallest rings. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required. 
+
+\b{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\b{index}: index of the oxygen you want to get the rings about, integer.
+
+\b{possible_rings}: array of the possible rings in the zeolite framework you are using. This is available on the IZA website. For CHA: [8,6,4]. 
+
+* Future Inclusions
+
+** Paired Hetero Atom Protonation
+
+** Collection of Zeolite Frameworks
+
+** T Site Pair Identification 
+
+* Contributions
+
+If there i something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
+
+* Acknowledgements
+
+This package wouldn't have been possible without the contributions from Justin R Crum. Thanks to Jian Ren Lim for testing.
