@@ -33,14 +33,23 @@ This command will replace one atom in the zeolite framework with a new of your c
 
 *** isolated(atoms,tatom,path='.')
 
-This command will enumerate all the possible structures of where a proton can bind around an isolated hetero atom inside the zeolite framework. Returns a trajectory of the possible structures (see examples for usage).
+This command will enumerate all the possible structures of where a proton can bind around an isolated hetero atom inside the zeolite framework. Returns a trajectory of the possible structures and a list of all the oxygen indices used (see examples for usage).
 
 *atoms*: zeolite framework in the form of an ASE atoms object.
 
-*tatom*: symbol of the hetero atom you would like to protonate.
+*tatom*: index of the hetero atom you would like to protonate.
 
 *path*: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format. 
 
+*** paired(atoms,tatoms,path='.')
+
+This command will enumerate all the possible structures of where a proton can bind around a set of paired hetero atoms inside the zeolite framework. Returns a trajectory of the possible structures, and a list of all the oxygen indices used (see examples for usage).
+
+*atoms*: zeolite framework in the form of an ASE atoms object.
+
+*tatom*: if both hetero atoms are of the same species, use the symbol (i.e. 'Al'). Otherwise use a list of the indices for the hetero atoms.
+
+*path*: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format.
 ** zse.rings
 
 *** get_rings(atoms, index, possible_rings)
