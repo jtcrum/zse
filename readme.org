@@ -17,18 +17,14 @@ Clone this git repository into your PYTHONPATH (i.e. anaconda3/pkgs/), and you a
 
 * Current Modules
 
-** zse.substitute
+** zse.collections
 
-*** tsub(atoms,index,new_atom)
+*** framework('code')
 
-This command will replace one atom in the zeolite framework with a new of your choosing. 
+This command will load an atoms object of the zeolite code you input. Every zeolite structure listed on iza-strcutres.org/databases/ as of 3/7/2020 are contained in this package.
 
-*atoms*: zeolite framework in the form of an ASE atoms object.
-
-*index*: index of the atom you would like to change into a new element.
-
-*new_atom*: symbol of the element you would like to change index into, must be string.
-
+*code*: string of the 3 character IZA framework code (i.e. 'CHA' or 'MFI').
+ 
 ** zse.protonate
 
 *** isolated(atoms,tatom,path='.')
@@ -50,6 +46,7 @@ This command will enumerate all the possible structures of where a proton can bi
 *tatom*: if both hetero atoms are of the same species, use the symbol (i.e. 'Al'). Otherwise use a list of the indices for the hetero atoms.
 
 *path*: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format.
+
 ** zse.rings
 
 *** get_rings(atoms, index, possible_rings)
@@ -62,13 +59,23 @@ This command will list the size of the rings associated with an oxygen atom. It 
 
 *possible_rings*: array of the possible rings in the zeolite framework you are using. This is available on the IZA website. For CHA: [8,6,4]. 
 
+
+** zse.substitute
+
+*** tsub(atoms,index,new_atom)
+
+This command will replace one atom in the zeolite framework with a new of your choosing. 
+
+*atoms*: zeolite framework in the form of an ASE atoms object.
+
+*index*: index of the atom you would like to change into a new element.
+
+*new_atom*: symbol of the element you would like to change index into, must be string.
 * Future Inclusions
 
-Paired Hetero Atom Protonation
-
-Collection of Zeolite Frameworks
-
 T Site Pair Identification 
+
+Divalent Cation Exchange
 
 * Contributions
 
