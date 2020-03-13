@@ -82,4 +82,4 @@ If there is something you would like to see added to this package, or if you wou
 
 * Acknowledgments
 
-This package wouldn't have been possible without the contributions from Justin R Crum. Thanks to Jian Ren Lim for testing.
+This package contains contributions from Justin R Crum. Thanks to Jian Ren Lim for testing.
