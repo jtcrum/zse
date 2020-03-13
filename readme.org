@@ -13,7 +13,7 @@ Numpy is also required.
 
 * Installation
 
-Clone this git repository into your PYTHONPATH (i.e. anaconda3/pkgs/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH. 
+Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/site-packages/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH. 
 
 * Current Modules
 
