@@ -49,16 +49,15 @@ This command will enumerate all the possible structures of where a proton can bi
 
 ** zse.rings
 
-*** get_rings(atoms, index, possible_rings)
+*** get_rings(atoms, index)
 
-This command will list the size of the rings associated with an oxygen atom. It returns the three smallest rings. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required. 
+This command will list the size of the rings associated with an oxygen atom. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required. 
 
 *atoms*: zeolite framework in the form of an ASE atoms object.
 
 *index*: index of the oxygen you want to get the rings about, integer.
 
-*possible_rings*: array of the possible rings in the zeolite framework you are using. This is available on the IZA website. For CHA: [8,6,4]. 
-
+*Note:* With latest update, speeds are much improved for ring classification. Also, there is no longer a need to provide the possible rings to the function. Please see example workbook for usage.
 
 ** zse.substitute
 
