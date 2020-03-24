@@ -9,13 +9,31 @@ This is a package for automating structure generation and characterization of ze
 * Requirements
 This package is built around the ASE atoms object, and thus requires installation of ASE (https://wiki.fysik.dtu.dk/ase/install.html).
 
-Numpy is also required. 
+Numpy is also required.
 
 * Installation
 
-Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/site-packages/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH. 
+Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/site-packages/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH.
 
 * Current Modules
+
+** zse.cation
+
+*** divalent(atoms, M, path= None)
+
+This function ill place one divalent cation into a zeolite framework that contains two negative charge centers. The cation is placed at each of 6 rings around each of the aluminum atoms. This creates 12 structures. Depending on the placement of your Al, some of the strucutres may not be unique.
+
+The structures will be placed in the path provided as an input. Format of the structures folder names are:
+
+D-aluminum_index-oxygen1_index,oxygen2_index.
+
+The original version of this code was written by Sichi Li in 2017.
+
+*atoms*: zeolite framework in the form of an ASE atoms object, with two Al T-sites.
+
+*M*: Symbol of the divalent cation you would like added to the structure. Must be a string, i.e. 'Cu'.
+
+*path*: If path is provided, structures will be saved to path location. 
 
 ** zse.collections
 
@@ -24,7 +42,7 @@ Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/sit
 This command will load an atoms object of the zeolite code you input. Every zeolite structure listed on iza-strcutres.org/databases/ as of 3/7/2020 are contained in this package.
 
 *code*: string of the 3 character IZA framework code (i.e. 'CHA' or 'MFI').
- 
+
 ** zse.protonate
 
 *** isolated(atoms,tatom,path='.')
@@ -35,7 +53,7 @@ This command will enumerate all the possible structures of where a proton can bi
 
 *tatom*: index of the hetero atom you would like to protonate.
 
-*path*: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format. 
+*path*: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format.
 
 *** paired(atoms,tatoms,path='.')
 
@@ -51,7 +69,7 @@ This command will enumerate all the possible structures of where a proton can bi
 
 *** get_rings(atoms, index)
 
-This command will list the size of the rings associated with an oxygen atom. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required. 
+This command will list the size of the rings associated with an oxygen atom. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required.
 
 *atoms*: zeolite framework in the form of an ASE atoms object.
 
@@ -63,7 +81,7 @@ This command will list the size of the rings associated with an oxygen atom. For
 
 *** tsub(atoms,index,new_atom)
 
-This command will replace one atom in the zeolite framework with a new of your choosing. 
+This command will replace one atom in the zeolite framework with a new of your choosing.
 
 *atoms*: zeolite framework in the form of an ASE atoms object.
 
@@ -72,7 +90,7 @@ This command will replace one atom in the zeolite framework with a new of your c
 *new_atom*: symbol of the element you would like to change index into, must be string.
 * Future Inclusions
 
-T Site Pair Identification 
+T Site Pair Identification
 
 Divalent Cation Exchange
 

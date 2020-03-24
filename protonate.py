@@ -4,7 +4,6 @@ import math
 import os.path
 import numpy as np
 import os
-import shutil
 from ase.build import molecule
 
 def isolated(atoms,tatom,path = '.'):
