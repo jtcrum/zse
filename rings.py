@@ -34,7 +34,7 @@ def get_rings(atoms, index):
     atoms.translate(trans)
     atoms.wrap()
 
-    cutoff = neighborlist.natural_cutoffs(atoms)
+    cutoff = neighborlist.natural_cutoffs(atoms,mult = 1.05)
     nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
     nl.update(atoms)
     matrix = nl.get_connectivity_matrix(sparse=False)
@@ -43,7 +43,8 @@ def get_rings(atoms, index):
 
     neighbs = nx.neighbors(G,index)
     for n in neighbs:
-        fe = [n]
+        if atoms[n].symbol == 'Si':
+            fe = [n]
     fe.append(index)
 
     G.remove_edge(fe[0],fe[1])
