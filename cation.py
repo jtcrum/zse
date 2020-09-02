@@ -33,12 +33,17 @@ def monovalent(atoms,symbol,path=None):
                 c = totpos[aluminum[l],:]
                 pos = a-c+b
                 tpos = pos.reshape(1,3)
-                adsorbate = Atoms(M)
+                adsorbate = Atoms(symbol)
                 adsorbate.set_positions(tpos)
                 M_lattice = atoms+adsorbate
                 traj+=[M_lattice]
 
-return traj
+                if path:
+                    os.makedirs('{0}/D-{1}-{2}-{3}'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])))
+
+                    write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
+
+    return traj
 
 def divalent(atoms,M,path = None):
     '''
