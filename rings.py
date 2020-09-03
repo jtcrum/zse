@@ -15,6 +15,75 @@ import numpy as np
 import math
 from zse import substitute
 
+def get_fwrings(code):
+    from zse.collections import get_fwrings
+    fw_rings = get_fwrings(code)
+    return fw_rings
+
+def get_orings(atoms, index,possible):
+
+    '''
+    atoms: ASE atoms object of the zeolite framework to be analyzed
+    index: (integer) index of the atom that you want to classify
+    possible: (list) of the types of rings known to be present in the zeolite
+              framework you are studying. This information is available on IZA
+              or in the collections module of this package.
+    Returns: Class - The size of rings associated with the oxygen.
+             paths - The actual atom indices that compose those rings.
+    '''
+
+    cell = atoms.get_cell_lengths_and_angles()
+    repeat = []
+    possible = possible*2
+    for i,c in enumerate(cell):
+        if c/2 < 8:
+            repeat.append(2)
+        else:
+            repeat.append(1)
+    atoms = atoms.repeat(repeat)
+    center = atoms.get_center_of_mass()
+    trans = center - atoms.positions[index]
+    atoms.translate(trans)
+    atoms.wrap()
+
+    cutoff = neighborlist.natural_cutoffs(atoms,mult = 1.05)
+    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
+    nl.update(atoms)
+    matrix = nl.get_connectivity_matrix(sparse=False)
+    m = matrix.copy()
+    G = nx.from_numpy_matrix(matrix)
+
+    neighbs = nx.neighbors(G,index)
+    for n in neighbs:
+        if atoms[n].symbol == 'Si':
+            fe = [n]
+    fe.append(index)
+
+    G.remove_edge(fe[0],fe[1])
+    tmpClass = []
+    rings = []
+    while len(tmpClass)<6:
+        try:
+            path = nx.shortest_path(G,fe[0],fe[1])
+        except:
+            break
+        if len(path) in possible:
+            tmpClass.append(int(len(path)/2))
+            rings.append(path)
+        length = len(path)
+        for n in np.arange(math.ceil(length/4),math.ceil(length - length/4)):
+            G.remove_edge(path[n],path[n+1])
+
+    rings = remove_dups(rings)
+    rings = remove_sec(rings)
+    Class = []
+    for r in rings:
+        Class.append(int(len(r)/2))
+    paths = rings
+    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
+    Class.sort(reverse=True)
+    return Class, paths
+
 def get_rings(atoms, index):
 
     '''
@@ -66,67 +135,74 @@ def get_rings(atoms, index):
         Class.sort(reverse=True)
     return Class
 
-def get_orings(atoms, index,possible):
-
+def get_trings(atoms,index,possible):
     '''
     atoms: ASE atoms object of the zeolite framework to be analyzed
     index: (integer) index of the atom that you want to classify
     possible: (list) of the types of rings known to be present in the zeolite
               framework you are studying. This information is available on IZA
               or in the collections module of this package.
-    Returns: Class - The size of rings associated with the oxygen.
+    Returns: Class - The size of the rings associated with the desire T Site.
              Rings - The actual atom indices that compose those rings.
+             atoms2 - An atoms object with the desired T Site changed to an
+             Aluminum atom (just for visual purposes), and all atoms removed
+             except for those that share a ring with the T Site provided.
     '''
-
-    cell = atoms.get_cell_lengths_and_angles()
+    possible = possible*2
+    atoms2 = atoms.copy()
+    cell = atoms2.get_cell_lengths_and_angles()
     repeat = []
 
     for i,c in enumerate(cell):
-        if c/2 < 8:
-            repeat.append(2)
+        if c/2 <12:
+            l = c
+            re = 2
+            while l/2 < 12:
+                l = c*re
+                re+=1
+            repeat.append(re)
         else:
             repeat.append(1)
-    atoms = atoms.repeat(repeat)
-    center = atoms.get_center_of_mass()
-    trans = center - atoms.positions[index]
-    atoms.translate(trans)
-    atoms.wrap()
+    atoms2 = atoms2.repeat(repeat)
+    center = atoms2.get_center_of_mass()
+    trans = center - atoms2.positions[index]
+    atoms2.translate(trans)
+    atoms2.wrap()
 
-    cutoff = neighborlist.natural_cutoffs(atoms,mult = 1.05)
+    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 1.05)
     nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
-    nl.update(atoms)
-    matrix = nl.get_connectivity_matrix(sparse=False)
+    nl.update(atoms2)
+    matrix = nl.get_connectivity_matrix(sparse = False)
     m = matrix.copy()
     G = nx.from_numpy_matrix(matrix)
+    rings = find_o_rings(G,index,possible)
+    paths = remove_dups(rings)
+    paths = remove_sec(paths)
+#     print('Unique Rings')
+#     for r in paths:
+#         print(int(len(r)/2),r)
+    keepers = []
+    for i in paths:
+        for j in i:
+            if j not in keepers:
+                keepers.append(j)
+    d = [atom.index for atom in atoms2 if atom.index not in keepers]
+    atoms2 = substitute.tsub(atoms2,index,'Al')
+    del atoms2[d]
 
-    neighbs = nx.neighbors(G,index)
-    for n in neighbs:
-        if atoms[n].symbol == 'Si':
-            fe = [n]
-    fe.append(index)
-
-    G.remove_edge(fe[0],fe[1])
-    tmpClass = []
-    rings = []
-    while len(tmpClass)<6:
-        try:
-            path = nx.shortest_path(G,fe[0],fe[1])
-        except:
-            break
-        if len(path) in possible:
-            tmpClass.append(int(len(path)/2))
-            rings.append(path)
-        length = len(path)
-        for n in np.arange(math.ceil(length/4),math.ceil(length - length/4)):
-            G.remove_edge(path[n],path[n+1])
-
-    rings = remove_dups(rings)
-    rings = remove_sec(rings)
     Class = []
-    for r in rings:
-        Class.append(int(len(r)/2))
+    for p in paths:
+        Class.append(int(len(p)/2))
+
+    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
     Class.sort(reverse=True)
-    return Class, rings
+
+    return Class,paths, atoms2
+
+def get_tsites(code):
+    from zse.collections import get_tsites
+    tsites,tmult = get_tsites(code)
+    return tsites,tmult
 
 def find_o_rings(G,index,possible):
     '''
@@ -212,59 +288,3 @@ def remove_sec(rings):
         if i not in d:
             paths.append(rings[i])
     return paths
-
-def get_trings(atoms,index,possible):
-    '''
-    atoms: ASE atoms object of the zeolite framework to be analyzed
-    index: (integer) index of the atom that you want to classify
-    possible: (list) of the types of rings known to be present in the zeolite
-              framework you are studying. This information is available on IZA
-              or in the collections module of this package.
-    Returns: Rings - The actual atom indices that compose those rings.
-             atoms2 - An atoms object with the desired T Site changed to an
-             Aluminum atom (just for visual purposes), and all atoms removed
-             except for those that share a ring with the T Site provided.
-    '''
-
-    atoms2 = atoms.copy()
-    cell = atoms2.get_cell_lengths_and_angles()
-    repeat = []
-
-    for i,c in enumerate(cell):
-        if c/2 <12:
-            l = c
-            re = 2
-            while l/2 < 12:
-                l = c*re
-                re+=1
-            repeat.append(re)
-        else:
-            repeat.append(1)
-    atoms2 = atoms2.repeat(repeat)
-    center = atoms2.get_center_of_mass()
-    trans = center - atoms2.positions[index]
-    atoms2.translate(trans)
-    atoms2.wrap()
-
-    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 1.05)
-    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
-    nl.update(atoms2)
-    matrix = nl.get_connectivity_matrix(sparse = False)
-    m = matrix.copy()
-    G = nx.from_numpy_matrix(matrix)
-    rings = find_o_rings(G,index,possible)
-    paths = remove_dups(rings)
-    paths = remove_sec(paths)
-#     print('Unique Rings')
-#     for r in paths:
-#         print(int(len(r)/2),r)
-    keepers = []
-    for i in paths:
-        for j in i:
-            if j not in keepers:
-                keepers.append(j)
-    d = [atom.index for atom in atoms2 if atom.index not in keepers]
-    atoms2 = substitute.tsub(atoms2,index,'Al')
-    del atoms2[d]
-
-    return paths, atoms2
