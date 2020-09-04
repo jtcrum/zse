@@ -200,9 +200,13 @@ def get_unique_trings(code,ring_size):
     for i in range(len(desired_rings_tsites)):
         for j in range((i+1), len(desired_rings_tsites)):
             if i != j:
-                st1 = set(desired_rings_tsites[i])
-                st2 = set(desired_rings_tsites[j])
-                if st1 == st2:
+                st1 = ' '.join(map(str,desired_rings_tsites[i]))
+                st2 = ' '.join(map(str,desired_rings_tsites[j]))
+                st2_2 = ' '.join(map(str,reversed(desired_rings_tsites[j])))
+                # st1 = set(desired_rings_tsites[i])
+                # st2 = set(desired_rings_tsites[j])
+                # if st1 == st2:
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
                     d.append(int(j))
     for i in range(len(desired_rings_tsites)):
         if i not in d:
@@ -210,6 +214,7 @@ def get_unique_trings(code,ring_size):
             unique_full.append(desired_rings_full[i])
 
     traj = []
+    com = ringatoms.get_center_of_mass()
     for ring in unique_full:
         keepers = []
         atoms = ringatoms.copy()
@@ -218,15 +223,13 @@ def get_unique_trings(code,ring_size):
                 keepers.append(i)
         d = [atom.index for atom in atoms if atom.index not in keepers]
         del atoms[d]
+        position = atoms[0].position
+        trans = com-position
+        atoms.translate(trans)
+        atoms.wrap()
         traj+=[atoms]
 
     return traj, unique_tsites
-
-
-
-
-
-
 
 def find_o_rings(G,index,possible):
     '''
