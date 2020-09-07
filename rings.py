@@ -36,33 +36,35 @@ def get_orings(atoms, index,possible):
     cell = atoms.get_cell_lengths_and_angles()[:3]
     repeat = []
     possible = possible*2
+    maxring = max(possible)
     for i,c in enumerate(cell):
-        if c/2 <15:
+        if c/2 < maxring/2+5:
             l = c
             re = 1
-            while l/2 < 15:
+            while l/2 < maxring/2+5:
                 re +=1
                 l = c*re
 
             repeat.append(re)
         else:
             repeat.append(1)
-    atoms = atoms.repeat(repeat)
-    center = atoms.get_center_of_mass()
-    trans = center - atoms.positions[index]
-    atoms.translate(trans)
-    atoms.wrap()
+    atoms2 = atoms.copy()
+    atoms2 = atoms2.repeat(repeat)
+    center = atoms2.get_center_of_mass()
+    trans = center - atoms2.positions[index]
+    atoms2.translate(trans)
+    atoms2.wrap()
 
-    cutoff = neighborlist.natural_cutoffs(atoms,mult = 1.05)
+    cutoff = neighborlist.natural_cutoffs(atoms2,mult = 1.05)
     nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
-    nl.update(atoms)
+    nl.update(atoms2)
     matrix = nl.get_connectivity_matrix(sparse=False)
     m = matrix.copy()
     G = nx.from_numpy_matrix(matrix)
 
     neighbs = nx.neighbors(G,index)
     for n in neighbs:
-        if atoms[n].symbol == 'Si':
+        if atoms2[n].symbol != 'O':
             fe = [n]
     fe.append(index)
 
@@ -74,12 +76,23 @@ def get_orings(atoms, index,possible):
             path = nx.shortest_path(G,fe[0],fe[1])
         except:
             break
-        if len(path) in possible:
+        length = len(path)
+        if length in possible:
             tmpClass.append(int(len(path)/2))
             rings.append(path)
-        length = len(path)
-        for n in np.arange(math.ceil(length/4),math.ceil(length - length/4)):
-            G.remove_edge(path[n],path[n+1])
+            if length == 18:
+                G.remove_edge(path[8],path[9])
+            elif length < 16 and length > 6:
+                G.remove_edge(path[3],path[4])
+            elif length >=16:
+                G.remove_edge(path[int(len(path)/2-1)],path[int(len(path)/2)])
+            if length == 8:
+                G.remove_node(path[4])
+            if length == 6:
+                G.remove_node(path[3])
+        else:
+            G.remove_edge(path[int(length/2)],path[int(length/2+1)])
+
 
     rings = remove_dups(rings)
     rings = remove_sec(rings)
@@ -89,7 +102,17 @@ def get_orings(atoms, index,possible):
     paths = rings
     paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
     Class.sort(reverse=True)
-    return Class, paths
+
+    keepers = []
+    for i in paths:
+        for j in i:
+            if j not in keepers:
+                keepers.append(j)
+    d = [atom.index for atom in atoms2 if atom.index not in keepers]
+    del atoms2[d]
+
+
+    return Class, paths, atoms2
 
 def get_rings(atoms, index):
 
@@ -154,8 +177,15 @@ def get_trings(atoms,index,possible):
 
 def get_tsites(code):
     from zse.collections import get_tsites
+    z = framework(code)
     tsites,tmult = get_tsites(code)
-    return tsites,tmult
+    tinds = [atom.index for atom in z if atom.symbol!='O']
+    index = 0
+    first_ts = []
+    for i,m in enumerate(tmult):
+        first_ts.append(tinds[index])
+        index+=m
+    return tsites,tmult,first_ts
 
 def get_unique_trings(code,ring_size):
     z = framework(code)
@@ -255,14 +285,39 @@ def find_o_rings(G,index,possible):
             if length in possible:
                 tmp_class.append(int(len(path)/2))
                 rings.append(path)
-                if length < 20:
+                if length == 18:
+                    G2.remove_edge(path[8],path[9])
+                elif length < 16 and length > 6:
                     G2.remove_edge(path[3],path[4])
-                else:
-                    G2.remove_edge(path[3],path[4])
+                elif length >=16:
+                    G2.remove_edge(path[int(len(path)/2-1)],path[int(len(path)/2)])
                 if length == 8:
-                    G2.remove_node(path[4])
+                    G2.remove_node(path[3])
+                if length == 6:
+                    G2.remove_node(path[3])
             else:
                 G2.remove_edge(path[int(length/2)],path[int(length/2+1)])
+
+    return rings
+
+def find_simple_o_rings(G,index,possible):
+    '''
+    This is a helper function for the get_trings function.
+    It won't do much on its own.
+    '''
+    rings = []
+    neighbs = nx.neighbors(G,index)
+    oxygen = []
+    for n in neighbs:
+        oxygen.append(n)
+    for i in range(4):
+        G2 = G.copy()
+        G2.remove_edge(index, oxygen[i])
+        tmp_class = []
+
+        for path in nx.all_simple_paths(G2,index,oxygen[i],cutoff=max(possible)-1):
+            if len(path) in possible:
+                rings.append(path)
 
     return rings
 
@@ -289,6 +344,28 @@ def remove_sec(rings):
     This is a helper function for get_orings and get_trings.
     '''
     d = []
+    count2 = np.zeros(len(rings))
+    # for i in range(len(rings)):
+    #     for j in range(i+1,len(rings)):
+    #         if i!= j:
+    #             ringi = rings[i]
+    #             ringj = rings[j]
+    #             ni = len(ringi)
+    #             nj = len(ringj)
+    #             if ni > nj and ni >= 16:
+    #                 count=0
+    #                 for rj in ringj:
+    #                     if rj in ringi:
+    #                         count+=1
+    #                 if count > nj/2:
+    #                     d.append(i)
+    #             if nj >ni and nj >= 16:
+    #                 count=0
+    #                 for ri in ringi:
+    #                     if ri in ringj:
+    #                         count+=1
+    #                 if count > ni/2:
+    #                     d.append(j)
     for i in range(len(rings)):
         for j in range(i+1,len(rings)):
             if i!= j:
@@ -296,20 +373,41 @@ def remove_sec(rings):
                 ringj = rings[j]
                 ni = len(ringi)
                 nj = len(ringj)
-                if ni > nj and ni >= 16:
+                if ni > nj and ni >= 16 and nj >8:
                     count=0
                     for rj in ringj:
                         if rj in ringi:
                             count+=1
-                    if count > nj/2:
-                        d.append(i)
-                if nj >ni and nj >= 16:
+                    if count == nj/2:
+                        count2[i]+=1
+                    elif count > nj/2:
+                        count2[i]+=2
+                if nj >ni and nj >= 16 and ni >8:
                     count=0
                     for ri in ringi:
                         if ri in ringj:
                             count+=1
-                    if count > ni/2:
-                        d.append(j)
+                    if count == ni/2:
+                        count2[j]+=1
+                    elif count > ni/2:
+                        count2[j]+=2
+                if ni > nj and nj in [6,8]:
+                    count=0
+                    for rj in ringj:
+                        if rj in ringi:
+                            count+=1
+                    if count >= nj-2:
+                        count2[i]+=2
+                if nj > ni and ni in [6,8]:
+                    count=0
+                    for ri in ringi:
+                        if ri in ringj:
+                            count+=1
+                    if count >= ni-2:
+                        count2[j]+=2
+    for i,c in enumerate(count2):
+        if c >=2:
+            d.append(i)
 
     paths = []
     for i in range(len(rings)):
@@ -334,12 +432,12 @@ def tring_driver(atoms,index,possible,delete=True):
     atoms2 = atoms.copy()
     cell = atoms2.get_cell_lengths_and_angles()[:3]
     repeat = []
-
+    maxring = max(possible)
     for i,c in enumerate(cell):
-        if c/2 <15:
+        if c/2 < maxring/2+5:
             l = c
             re = 1
-            while l/2 < 15:
+            while l/2 < maxring/2+5:
                 re +=1
                 l = c*re
 
@@ -352,7 +450,7 @@ def tring_driver(atoms,index,possible,delete=True):
     atoms2.translate(trans)
     atoms2.wrap()
 
-    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 1.05)
+    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 0.95)
     nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
     nl.update(atoms2)
     matrix = nl.get_connectivity_matrix(sparse = False)
@@ -379,3 +477,84 @@ def tring_driver(atoms,index,possible,delete=True):
     Class.sort(reverse=True)
 
     return Class ,paths, atoms2, repeat
+
+def unique_rings(code):
+    z = framework(code)
+    pr = get_fwrings(code)
+    tsites,tmult, first = get_tsites(code)
+    tinds = [atom.index for atom in z if atom.symbol!='O']
+    index = 0
+    firstts = []
+    for i,m in enumerate(tmult):
+        firstts.append(tinds[index])
+        index+=m
+    allrings = []
+    for f in firstts:
+        c,r,ringatoms,repeat = tring_driver(z,f,pr,delete=False)
+        for ring in r:
+            allrings.append(ring)
+    tinds = [atom.index for atom in ringatoms if atom.symbol!='O']
+    rp = np.prod(repeat)
+    Dict = {}
+    j=0
+    for i in range(rp):
+        for s,t in enumerate(tsites):
+            for q in range(tmult[s]):
+                Dict[tinds[j]]=t
+                j+=1
+    ring_tsites = []
+    for ring in allrings:
+        tmp = []
+        for i in ring:
+            if ringatoms[i].symbol != 'O':
+                tmp.append(Dict[i])
+        ring_tsites.append(tmp)
+    unique_tsites = {}
+    unique_full = {}
+    for i,r in enumerate(ring_tsites):
+        length = len(r)
+        if length not in unique_tsites:
+            unique_tsites[length] = [r]
+            unique_full[length] = [allrings[i]]
+        else:
+            unique_tsites[length].append(r)
+            unique_full[length].append(allrings[i])
+    trajectories = {}
+    com = ringatoms.get_center_of_mass()
+    for length in pr:
+        ring_tlist = unique_tsites[length]
+        ring_full  = unique_full[length]
+        d = []
+        for i in range(len(ring_tlist)):
+            for j in range((i+1), len(ring_tlist)):
+                st1 = ' '.join(map(str,ring_tlist[i]))
+                st2 = ' '.join(map(str,ring_tlist[j]))
+                st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
+                    d.append(int(j))
+        tmp1 = []
+        tmp2 = []
+        for i in range(len(ring_tlist)):
+            if i not in d:
+                tmp1.append(ring_tlist[i])
+                tmp2.append(ring_full[i])
+        unique_tsites[length] = tmp1
+        unique_full[length] = tmp2
+        traj = []
+        for ring in tmp2:
+            keepers = []
+            atoms = ringatoms.copy()
+            for i in ring:
+                if i not in keepers:
+                    keepers.append(i)
+            d = [atom.index for atom in atoms if atom.index not in keepers]
+            del atoms[d]
+            position = atoms[0].position
+            trans = com-position
+            atoms.translate(trans)
+            atoms.wrap()
+            traj+=[atoms]
+        trajectories[length]=traj
+
+
+    return unique_tsites, unique_full, trajectories
