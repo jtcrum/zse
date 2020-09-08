@@ -373,7 +373,7 @@ def remove_sec(rings):
                 ringj = rings[j]
                 ni = len(ringi)
                 nj = len(ringj)
-                if ni > nj and ni >= 16 and nj >8:
+                if ni > nj and ni >= 16 and nj > 6:
                     count=0
                     for rj in ringj:
                         if rj in ringi:
@@ -382,7 +382,7 @@ def remove_sec(rings):
                         count2[i]+=1
                     elif count > nj/2:
                         count2[i]+=2
-                if nj >ni and nj >= 16 and ni >8:
+                if nj >ni and nj >= 16 and ni > 6:
                     count=0
                     for ri in ringi:
                         if ri in ringj:
