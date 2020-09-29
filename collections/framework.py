@@ -19,3 +19,10 @@ def get_tsites(code):
     tsites = db.get(fw=code).data.tsites
     tmult = db.get(fw=code).data.tmult
     return tsites,tmult
+
+def get_all_fws():
+    db = connect(filepath)
+    fws = []
+    for row in db.select():
+        fws.append(row.fw)
+    return fws

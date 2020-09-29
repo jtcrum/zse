@@ -187,80 +187,6 @@ def get_tsites(code):
         index+=m
     return tsites,tmult,first_ts
 
-def get_unique_trings(code,ring_size):
-    z = framework(code)
-    pr = get_fwrings(code)
-    tsites,tmult = get_tsites(code)
-    tinds = [atom.index for atom in z if atom.symbol!='O']
-    index = 0
-    firstts = []
-    for i,m in enumerate(tmult):
-        firstts.append(tinds[index])
-        index+=m
-    allrings = []
-    for f in firstts:
-        c,r,ringatoms,repeat = tring_driver(z,f,pr,delete=False)
-        for ring in r:
-            allrings.append(ring)
-    tinds = [atom.index for atom in ringatoms if atom.symbol!='O']
-    rp = np.prod(repeat)
-    Dict = {}
-    j=0
-    for i in range(rp):
-        for s,t in enumerate(tsites):
-            for q in range(tmult[s]):
-                Dict[tinds[j]]=t
-                j+=1
-    ring_tsites = []
-    for ring in allrings:
-        tmp = []
-        for i in ring:
-            if ringatoms[i].symbol != 'O':
-                tmp.append(Dict[i])
-        ring_tsites.append(tmp)
-    desired_rings_tsites = []
-    desired_rings_full = []
-    for i,r in enumerate(ring_tsites):
-        if len(r)==ring_size:
-            desired_rings_tsites.append(r)
-            desired_rings_full.append(allrings[i])
-    unique_tsites = []
-    unique_full = []
-    d = []
-    for i in range(len(desired_rings_tsites)):
-        for j in range((i+1), len(desired_rings_tsites)):
-            if i != j:
-                st1 = ' '.join(map(str,desired_rings_tsites[i]))
-                st2 = ' '.join(map(str,desired_rings_tsites[j]))
-                st2_2 = ' '.join(map(str,reversed(desired_rings_tsites[j])))
-                # st1 = set(desired_rings_tsites[i])
-                # st2 = set(desired_rings_tsites[j])
-                # if st1 == st2:
-                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
-                    d.append(int(j))
-    for i in range(len(desired_rings_tsites)):
-        if i not in d:
-            unique_tsites.append(desired_rings_tsites[i])
-            unique_full.append(desired_rings_full[i])
-
-    traj = []
-    com = ringatoms.get_center_of_mass()
-    for ring in unique_full:
-        keepers = []
-        atoms = ringatoms.copy()
-        for i in ring:
-            if i not in keepers:
-                keepers.append(i)
-        d = [atom.index for atom in atoms if atom.index not in keepers]
-        del atoms[d]
-        position = atoms[0].position
-        trans = com-position
-        atoms.translate(trans)
-        atoms.wrap()
-        traj+=[atoms]
-
-    return traj, unique_tsites
-
 def find_o_rings(G,index,possible):
     '''
     This is a helper function for the get_trings function.
@@ -297,27 +223,6 @@ def find_o_rings(G,index,possible):
                     G2.remove_node(path[3])
             else:
                 G2.remove_edge(path[int(length/2)],path[int(length/2+1)])
-
-    return rings
-
-def find_simple_o_rings(G,index,possible):
-    '''
-    This is a helper function for the get_trings function.
-    It won't do much on its own.
-    '''
-    rings = []
-    neighbs = nx.neighbors(G,index)
-    oxygen = []
-    for n in neighbs:
-        oxygen.append(n)
-    for i in range(4):
-        G2 = G.copy()
-        G2.remove_edge(index, oxygen[i])
-        tmp_class = []
-
-        for path in nx.all_simple_paths(G2,index,oxygen[i],cutoff=max(possible)-1):
-            if len(path) in possible:
-                rings.append(path)
 
     return rings
 
@@ -558,3 +463,238 @@ def unique_rings(code):
 
 
     return unique_tsites, unique_full, trajectories
+
+'''
+The following are developmental codes for testing
+'''
+def get_all_rings(code):
+    '''
+    For developmental testing only.
+    '''
+    z = framework(code)
+    pr = get_fwrings(code)
+    tsites,tmult, first = get_tsites(code)
+    tinds = [atom.index for atom in z if atom.symbol!='O']
+    index = 0
+    firstts = []
+    for i,m in enumerate(tmult):
+        firstts.append(tinds[index])
+        index+=m
+    allrings = []
+    for f in firstts:
+        c,r,ringatoms,repeat = all_trings(z,f,pr,delete=False)
+        for ring in r:
+            allrings.append(ring)
+    tinds = [atom.index for atom in ringatoms if atom.symbol!='O']
+    rp = np.prod(repeat)
+    Dict = {}
+    j=0
+    for i in range(rp):
+        for s,t in enumerate(tsites):
+            for q in range(tmult[s]):
+                Dict[tinds[j]]=t
+                j+=1
+    ring_tsites = []
+    for ring in allrings:
+        tmp = []
+        for i in ring:
+            if ringatoms[i].symbol != 'O':
+                tmp.append(Dict[i])
+        ring_tsites.append(tmp)
+    unique_tsites = {}
+    unique_full = {}
+    for i,r in enumerate(ring_tsites):
+        length = len(r)
+        if length not in unique_tsites:
+            unique_tsites[length] = [r]
+            unique_full[length] = [allrings[i]]
+        else:
+            unique_tsites[length].append(r)
+            unique_full[length].append(allrings[i])
+    trajectories = {}
+    com = ringatoms.get_center_of_mass()
+    for length in pr:
+        ring_tlist = unique_tsites[length]
+        ring_full  = unique_full[length]
+        d = []
+        for i in range(len(ring_tlist)):
+            for j in range((i+1), len(ring_tlist)):
+                st1 = ' '.join(map(str,ring_tlist[i]))
+                st2 = ' '.join(map(str,ring_tlist[j]))
+                st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
+                    d.append(int(j))
+        tmp1 = []
+        tmp2 = []
+        for i in range(len(ring_tlist)):
+            if i not in d:
+                tmp1.append(ring_tlist[i])
+                tmp2.append(ring_full[i])
+        unique_tsites[length] = tmp1
+        unique_full[length] = tmp2
+        traj = []
+        for ring in tmp2:
+            keepers = []
+            atoms = ringatoms.copy()
+            for i in ring:
+                if i not in keepers:
+                    keepers.append(i)
+            d = [atom.index for atom in atoms if atom.index not in keepers]
+            del atoms[d]
+            position = atoms[0].position
+            trans = com-position
+            atoms.translate(trans)
+            atoms.wrap()
+            traj+=[atoms]
+        trajectories[length]=traj
+
+
+    return unique_tsites, unique_full, trajectories
+
+def all_trings(atoms,index,possible,delete=True):
+    '''
+    For developmental testing purposes only.
+    '''
+    possible = possible*2
+    atoms2 = atoms.copy()
+    cell = atoms2.get_cell_lengths_and_angles()[:3]
+    repeat = []
+    maxring = max(possible)
+    for i,c in enumerate(cell):
+        if c/2 < maxring/2+5:
+            l = c
+            re = 1
+            while l/2 < maxring/2+5:
+                re +=1
+                l = c*re
+
+            repeat.append(re)
+        else:
+            repeat.append(1)
+    atoms2 = atoms2.repeat(repeat)
+    center = atoms2.get_center_of_mass()
+    trans = center - atoms2.positions[index]
+    atoms2.translate(trans)
+    atoms2.wrap()
+
+    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 0.95)
+    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
+    nl.update(atoms2)
+    matrix = nl.get_connectivity_matrix(sparse = False)
+    m = matrix.copy()
+    G = nx.from_numpy_matrix(matrix)
+    rings = find_simple_o_rings(G,index,possible)
+    paths = remove_dups(rings)
+    # paths = remove_sec(paths)
+    if delete == True:
+        keepers = []
+        for i in paths:
+            for j in i:
+                if j not in keepers:
+                    keepers.append(j)
+        d = [atom.index for atom in atoms2 if atom.index not in keepers]
+        atoms2 = substitute.tsub(atoms2,index,'Al')
+        del atoms2[d]
+
+    Class = []
+    for p in paths:
+        Class.append(int(len(p)/2))
+
+    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
+    Class.sort(reverse=True)
+
+    return Class ,paths, atoms2, repeat
+
+def find_simple_o_rings(G,index,possible):
+    '''
+    This is a helper function for the get_trings function.
+    It won't do much on its own.
+    '''
+    rings = []
+    neighbs = nx.neighbors(G,index)
+    oxygen = []
+    for n in neighbs:
+        oxygen.append(n)
+    for i in range(4):
+        G2 = G.copy()
+        G2.remove_edge(index, oxygen[i])
+        tmp_class = []
+
+        for path in nx.all_simple_paths(G2,index,oxygen[i],cutoff=max(possible)-1):
+            rings.append(path)
+
+    return rings
+
+def get_unique_trings(code,ring_size):
+    z = framework(code)
+    pr = get_fwrings(code)
+    tsites,tmult = get_tsites(code)
+    tinds = [atom.index for atom in z if atom.symbol!='O']
+    index = 0
+    firstts = []
+    for i,m in enumerate(tmult):
+        firstts.append(tinds[index])
+        index+=m
+    allrings = []
+    for f in firstts:
+        c,r,ringatoms,repeat = tring_driver(z,f,pr,delete=False)
+        for ring in r:
+            allrings.append(ring)
+    tinds = [atom.index for atom in ringatoms if atom.symbol!='O']
+    rp = np.prod(repeat)
+    Dict = {}
+    j=0
+    for i in range(rp):
+        for s,t in enumerate(tsites):
+            for q in range(tmult[s]):
+                Dict[tinds[j]]=t
+                j+=1
+    ring_tsites = []
+    for ring in allrings:
+        tmp = []
+        for i in ring:
+            if ringatoms[i].symbol != 'O':
+                tmp.append(Dict[i])
+        ring_tsites.append(tmp)
+    desired_rings_tsites = []
+    desired_rings_full = []
+    for i,r in enumerate(ring_tsites):
+        if len(r)==ring_size:
+            desired_rings_tsites.append(r)
+            desired_rings_full.append(allrings[i])
+    unique_tsites = []
+    unique_full = []
+    d = []
+    for i in range(len(desired_rings_tsites)):
+        for j in range((i+1), len(desired_rings_tsites)):
+            if i != j:
+                st1 = ' '.join(map(str,desired_rings_tsites[i]))
+                st2 = ' '.join(map(str,desired_rings_tsites[j]))
+                st2_2 = ' '.join(map(str,reversed(desired_rings_tsites[j])))
+                # st1 = set(desired_rings_tsites[i])
+                # st2 = set(desired_rings_tsites[j])
+                # if st1 == st2:
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
+                    d.append(int(j))
+    for i in range(len(desired_rings_tsites)):
+        if i not in d:
+            unique_tsites.append(desired_rings_tsites[i])
+            unique_full.append(desired_rings_full[i])
+
+    traj = []
+    com = ringatoms.get_center_of_mass()
+    for ring in unique_full:
+        keepers = []
+        atoms = ringatoms.copy()
+        for i in ring:
+            if i not in keepers:
+                keepers.append(i)
+        d = [atom.index for atom in atoms if atom.index not in keepers]
+        del atoms[d]
+        position = atoms[0].position
+        trans = com-position
+        atoms.translate(trans)
+        atoms.wrap()
+        traj+=[atoms]
+
+    return traj, unique_tsites

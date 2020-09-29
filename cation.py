@@ -15,7 +15,7 @@ def monovalent(atoms,symbol,path=None):
         tmp = []
         for k in total_oxygen:
             distance = atoms.get_distance(k,j,mic=True)
-            if distance < 1.7:
+            if distance < 2:
                 tmp.append(k)
                 if len(tmp)  == 4:
                     oxygens.append(tmp)
@@ -39,7 +39,7 @@ def monovalent(atoms,symbol,path=None):
                 traj+=[M_lattice]
 
                 if path:
-                    os.makedirs('{0}/D-{1}-{2}-{3}'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])))
+                    os.makedirs('{0}/D-{1}-{2}-{3}'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),exist_ok=True)
 
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
 
