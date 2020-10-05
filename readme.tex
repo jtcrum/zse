@@ -1,0 +1,295 @@
+% Created 2020-10-05 Mon 10:09
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[version=3]{mhchem}
+\usepackage[numbers,super,sort&compress]{natbib}
+\usepackage{natmove}
+\usepackage{url}
+\usepackage{minted}
+\usepackage{underscore}
+\usepackage[linktocpage,pdfstartview=FitH,colorlinks,
+linkcolor=blue,anchorcolor=blue,
+citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
+\usepackage{attachfile}
+\author{Jerry Crum}
+\date{\today}
+\title{}
+\begin{document}
+
+\tableofcontents
+
+\section{Zeolite Simulation Environment}
+\label{sec:org87917e5}
+Jerry Crum \\
+Updated: 10/5/2020
+
+\section{Description}
+\label{sec:org0743d7d}
+This is a package for automating structure generation and characterization of zeolites for computational chemistry.
+
+\section{Requirements}
+\label{sec:orgb2f779f}
+This package is built around the ASE atoms object, and thus requires installation of ASE, available at: \url{https://wiki.fysik.dtu.dk/ase/install.html}.
+
+Ring finding uses graph theory implemented by NetworkX, available at: \url{https://networkx.github.io}.
+
+Numpy is also required.
+
+\section{Installation}
+\label{sec:org8a5f551}
+
+Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/site-packages/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH.
+
+\section{Current Modules}
+\label{sec:org29f804a}
+
+\subsection{zse.cation}
+\label{sec:orgf0414b0}
+
+\subsubsection{divalent(atoms, M, path= None)}
+\label{sec:orgee4c8f5}
+
+This function will place one divalent cation into a zeolite framework that contains two negative charge centers. The cation is placed at each of 6 rings around each of the aluminum atoms. This creates 12 structures. Depending on the placement of your Al, some of the strucutres may not be unique.
+
+The structures will be placed in the path provided as an input. Format of the structures folder names are:
+
+D-aluminum\_index-oxygen1\_index,oxygen2\_index.
+
+The original version of this code was written by Sichi Li in 2017.
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object, with two Al T-sites.
+
+\textbf{M}: Symbol of the divalent cation you would like added to the structure. Must be a string, i.e. 'Cu'.
+
+\textbf{path}: If path is provided, structures will be saved to path location. 
+
+\textbf{returns}: Trajectory of atom objects for the structures created.
+
+\subsubsection{monovalent(atoms, symbol, path=None)}
+\label{sec:orgec7880e}
+
+This function will place one monovalent cation into a zeolite framework that contains one aluminum atoms. The cation is placed at each of the 6 rings around the aluminum atoms. This creates 6 structures.
+
+The structures will be placed in the path provided as an input. Format of the structures folder names are: D-aluminum\_index-oxygen1\_index,oxygen2\_index.
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object, with one Al T-site.
+
+\textbf{symbol}: Symbol of the monovalent cation you would like added to the structure. Must be a string, i.e. 'Na'.
+
+\textbf{path}: If path is provided, structures will be saved to path location.
+
+\textbf{returns}: Trajectory of atom objects for the structures created.
+\subsection{zse.collections}
+\label{sec:org74ce673}
+
+\subsubsection{framework('code')}
+\label{sec:org4a8a171}
+
+This command will load an atoms object of the zeolite code you input. Every zeolite structure listed on iza-strcutres.org/databases/ as of 3/7/2020 are contained in this package.
+
+\textbf{code}: string of the 3 character IZA framework code (i.e. 'CHA' or 'MFI').
+
+\textbf{returns}: Atoms object of that zeolite framework with the lattice constants and atom positions from the IZA. 
+
+\subsubsection{get\_all\_fws()}
+\label{sec:orgf741d64}
+
+\textbf{returns}: List of all the zeolite frameworks included in ZSE.
+\subsection{zse.protonate}
+\label{sec:org57a58e3}
+
+\subsubsection{isolated(atoms,tatom,path='.')}
+\label{sec:orgfd7df48}
+
+This command will enumerate all the possible structures of where a proton can bind around an isolated hetero atom inside the zeolite framework. Returns a trajectory of the possible structures and a list of all the oxygen indices used (see examples for usage).
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\textbf{tatom}: index of the hetero atom you would like to protonate.
+
+\textbf{path}: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format.
+
+\textbf{returns}: traj, oxygens
+
+\textbf{traj}: A trajectory of atom objects for the structures created.
+
+\textbf{oxygens}: List of the oxygen indices that the proton was bound to.
+
+\subsubsection{paired(atoms,tatoms,path='.')}
+\label{sec:orgfbe74b8}
+
+This command will enumerate all the possible structures of where a proton can bind around a set of paired hetero atoms inside the zeolite framework. Returns a trajectory of the possible structures, and a list of all the oxygen indices used (see examples for usage).
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\textbf{tatom}: if both hetero atoms are of the same species, use the symbol (i.e. 'Al'). Otherwise use a list of the indices for the hetero atoms.
+
+\textbf{path}: path to the location where you would like the structures saved. Currently, the structures can only be saved in the VASP POSCAR format.
+
+\textbf{returns}: traj, oxygens
+
+\textbf{traj}: A trajectory of atom objects for the structures created.
+
+\textbf{oxygens}: List of the oxygen indices that the proton was bound to.
+
+\subsection{zse.rings}
+\label{sec:orga6dd227}
+
+\subsubsection{get\_fwrings(code)}
+\label{sec:org629ee1a}
+
+\textbf{code}: Zeolite framework code in string form, i.e. 'CHA'.
+
+\textbf{returns}: Array containing the size of rings present in that zeolite framework.
+
+
+\subsubsection{get\_orings(atoms, index, possible)}
+\label{sec:orge65ed7c}
+
+This function will find all the rings associated with a specific oxygen atom in the zeolite framework.
+
+\textbf{atoms}: Atoms object containing the zeolite framework. Works best if there are no extra framework atoms present.
+
+\textbf{index}: Index of the oxygen atom in question.
+
+\textbf{possible}: The possible sizes of rings for the framework type in question. Use get\_fwrings() for this information.
+
+\textbf{returns}: Class, paths, atoms
+
+\textbf{Class}: List of the size of rings found to be associated with the oxygen.
+
+\textbf{paths}: Indices of the atoms that make up each of the rings.
+
+\textbf{atoms}: Atoms object that shows only the atoms in the rings associated with the oxygen.
+
+
+\subsubsection{get\_rings(atoms, index)}
+\label{sec:org834438b}
+
+\textbf{Warning}: This an old implementation of get\_orings that does not work consistently for every framework type. 
+
+This command will list the size of the rings associated with an oxygen atom. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required.
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\textbf{index}: index of the oxygen you want to get the rings about, integer.
+
+\textbf{Note:} With latest update, speeds are much improved for ring classification. Also, there is no longer a need to provide the possible rings to the function. Please see example workbook for usage.
+
+
+\subsubsection{get\_trings(atoms, index, possible)}
+\label{sec:orgdfebb35}
+
+This function will find all the rings associated with a specific T-site in the zeolite framework. This function works by using get\_orings() for each oxygen connected to the T-site, and then removing duplicate rings. 
+
+\textbf{atoms}: Atoms object containing the zeolite framework. Works best if there are no extra framework atoms present.
+
+\textbf{index}: Index of the oxygen atom in question.
+
+\textbf{possible}: The possible sizes of rings for the framework type in question. Use get\_fwrings() for this information.
+
+\textbf{returns}: Class, paths, atoms
+
+\textbf{Class}: List of the size of rings found to be associated with the oxygen.
+
+\textbf{paths}: Indices of the atoms that make up each of the rings.
+
+\textbf{atoms}: Atoms object that shows only the atoms in the rings associated with the oxygen.
+
+
+\subsubsection{find\_orings(G, index, possible)}
+\label{sec:org4258a47}
+
+This is a helper function for get\_trings(), it is not really meant to be used on it's own. 
+
+\subsubsection{remove\_dups(rings)}
+\label{sec:orgb3e574a}
+
+This is a helper function that removes duplicate rings found during use of get\_orings(), get\_trings(), and unique\_rings(). It is not really intended to be used on it's own.
+
+
+\subsubsection{remove\_sec(rings)}
+\label{sec:org88409a0}
+
+This is a helper function that removes secondary rings (random paths through the framework) found during use of get\_orings(), get\_trings(), and unique\_rings(). It is not really intended to be used on it's own.
+
+
+\subsubsection{tring\_driver(code)}
+\label{sec:org0e64a8b}
+
+This is a helper function for get\_trings(), and unique\_rings(). It is not intended to be used on it's own. 
+
+\subsubsection{unique\_rings(code)}
+\label{sec:org05c0cff}
+
+This function will find all of the unique rings in a framework of sizes contained in the possible rings from get\_fwrings().
+
+\textbf{code}: Zeolite framework code in string form, i.e. 'CHA'. 
+
+\textbf{returns}: unique\_tsites, unique\_full, trajectories
+
+\textbf{unique\_tsites}: Dictionary containing all the unique rings of each size present in the framework, listed by the T-sites in the ring. If you have used this code on CHA, and you would like to see the list of 8-MR T-sites, type: // unique\_tistes[8]. 
+
+\textbf{unique\_full}: Dictionary containing all the unique rings of each size present in the framework, listed by all the atom indices that make up each ring. If you have used this code on CHA, and you would like to the list of 8-MR indices, type: // unique\_full[8].
+
+\textbf{trajectories}: Dictionary containing all the atoms objects for each ring found. If you have this used this code on CHA, and you want to visualize the 8-MR, type: \emph{/ from ase.visualize import view /} view trajectories[8].
+
+\subsection{zse.substitute}
+\label{sec:orgac73721}
+
+\subsubsection{tsub(atoms,index,new\_atom)}
+\label{sec:orgeecaf80}
+
+This command will replace one atom in the zeolite framework with a new of your choosing.
+
+\textbf{atoms}: zeolite framework in the form of an ASE atoms object.
+
+\textbf{index}: index of the atom you would like to change into a new element.
+
+\textbf{new\_atom}: symbol of the element you would like to change index into, must be string.
+
+\textbf{returns}: Atoms object of the structure with the substitution. 
+\section{Future Inclusions}
+\label{sec:orge1d632f}
+
+T Site Pair Identification
+
+\section{Contributions}
+\label{sec:orge3f432c}
+
+If there is something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
+
+\section{Acknowledgments}
+\label{sec:orge43dc04}
+\subsection{Contributors}
+\label{sec:org578041e}
+
+Jerry Crum \\
+Justin Crum \\
+Sichi Li \\
+Yujia Wang \\
+William Schneider
+
+\subsection{Testers}
+\label{sec:org39d918e}
+
+Craig Waitt\\
+Jian Ren Lim\\
+Elsa Koninckz
+\end{document}
