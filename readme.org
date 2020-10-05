@@ -214,14 +214,14 @@ If there is something you would like to see added to this package, or if you wou
 * Acknowledgments
 ** Contributors
 
-Jerry Crum \\
-Justin Crum \\
-Sichi Li \\
-Yujia Wang \\
+Jerry Crum \n
+Justin Crum \n
+Sichi Li \n
+Yujia Wang \n
 William Schneider
 
 ** Testers
 
-Craig Waitt\\
-Jian Ren Lim\\
+Craig Waitt\n
+Jian Ren Lim\n
 Elsa Koninckz
