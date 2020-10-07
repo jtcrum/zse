@@ -71,7 +71,7 @@ def get_orings(atoms, index,possible):
     G.remove_edge(fe[0],fe[1])
     tmpClass = []
     rings = []
-    while len(tmpClass)<6:
+    while len(tmpClass)<8:
         try:
             path = nx.shortest_path(G,fe[0],fe[1])
         except:
@@ -91,7 +91,10 @@ def get_orings(atoms, index,possible):
             if length == 6:
                 G.remove_node(path[3])
         else:
-            G.remove_edge(path[int(length/2)],path[int(length/2+1)])
+            if (len(path)%2)==0:
+                G.remove_node(path[int(length/2-1)])
+            elif (len(path)%2)!=0:
+                G.remove_node(path[int(length/2)])
 
 
     rings = remove_dups(rings)
@@ -202,7 +205,7 @@ def find_o_rings(G,index,possible):
         G2.remove_edge(index, oxygen[i])
         tmp_class = []
 
-        while len(tmp_class)<6:
+        while len(tmp_class)<8:
             try:
                 path = nx.shortest_path(G2,index,oxygen[i])
             except:
@@ -222,7 +225,10 @@ def find_o_rings(G,index,possible):
                 if length == 6:
                     G2.remove_node(path[3])
             else:
-                G2.remove_edge(path[int(length/2)],path[int(length/2+1)])
+                if (len(path)%2)==0:
+                    G.remove_node(path[int(length/2-1)])
+                elif (len(path)%2)!=0:
+                    G.remove_node(path[int(length/2)])
 
     return rings
 
