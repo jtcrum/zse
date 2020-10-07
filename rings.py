@@ -63,17 +63,20 @@ def get_orings(atoms, index,possible):
     G = nx.from_numpy_matrix(matrix)
 
     neighbs = nx.neighbors(G,index)
+    fe = []
     for n in neighbs:
         if atoms2[n].symbol != 'O':
-            fe = [n]
+            fe.append(n)
     fe.append(index)
 
-    G.remove_edge(fe[0],fe[1])
+
     tmpClass = []
     rings = []
+    G2 = G.copy()
+    G2.remove_edge(fe[0],fe[2])
     while len(tmpClass)<8:
         try:
-            path = nx.shortest_path(G,fe[0],fe[1])
+            path = nx.shortest_path(G2,fe[0],fe[2])
         except:
             break
         length = len(path)
@@ -81,20 +84,54 @@ def get_orings(atoms, index,possible):
             tmpClass.append(int(len(path)/2))
             rings.append(path)
             if length == 18:
-                G.remove_edge(path[8],path[9])
+                G2.remove_edge(path[8],path[9])
             elif length < 16 and length > 6:
-                G.remove_edge(path[3],path[4])
+                if ((len(path)/2)%2)==0:
+                    G2.remove_node(path[int(length/2-1)])
+                elif ((len(path)/2)%2)!=0:
+                    G2.remove_node(path[int(length/2)])
             elif length >=16:
-                G.remove_edge(path[int(len(path)/2-1)],path[int(len(path)/2)])
+                G2.remove_edge(path[int(len(path)/2-1)],path[int(len(path)/2)])
             if length == 8:
-                G.remove_node(path[4])
+                G2.remove_node(path[4])
             if length == 6:
-                G.remove_node(path[3])
+                G2.remove_node(path[3])
         else:
-            if (len(path)%2)==0:
-                G.remove_node(path[int(length/2-1)])
-            elif (len(path)%2)!=0:
-                G.remove_node(path[int(length/2)])
+            if ((len(path)/2)%2)==0:
+                G2.remove_node(path[int(length/2-1)])
+            elif ((len(path)/2)%2)!=0:
+                G2.remove_node(path[int(length/2)])
+
+    tmpClass = []
+    G2=G.copy()
+    G2.remove_edge(fe[1],fe[2])
+    while len(tmpClass)<8:
+        try:
+            path = nx.shortest_path(G2,fe[1],fe[2])
+        except:
+            break
+        length = len(path)
+        if length in possible:
+            tmpClass.append(int(len(path)/2))
+            rings.append(path)
+            if length == 18:
+                G2.remove_edge(path[8],path[9])
+            elif length < 16 and length > 6:
+                if ((len(path)/2)%2)==0:
+                    G2.remove_node(path[int(length/2-1)])
+                elif ((len(path)/2)%2)!=0:
+                    G2.remove_node(path[int(length/2)])
+            elif length >=16:
+                G2.remove_edge(path[int(len(path)/2-1)],path[int(len(path)/2)])
+            if length == 8:
+                G2.remove_node(path[4])
+            if length == 6:
+                G2.remove_node(path[3])
+        else:
+            if ((len(path)/2)%2)==0:
+                G2.remove_node(path[int(length/2-1)])
+            elif ((len(path)/2)%2)!=0:
+                G2.remove_node(path[int(length/2)])
 
 
     rings = remove_dups(rings)
