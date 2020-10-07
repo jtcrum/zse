@@ -54,7 +54,7 @@ def get_orings(atoms, index,possible):
     trans = center - atoms2.positions[index]
     atoms2.translate(trans)
     atoms2.wrap()
-
+    atoms3 = atoms2.copy()
     cutoff = neighborlist.natural_cutoffs(atoms2,mult = 1.05)
     nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
     nl.update(atoms2)
@@ -68,7 +68,6 @@ def get_orings(atoms, index,possible):
         if atoms2[n].symbol != 'O':
             fe.append(n)
     fe.append(index)
-
 
     tmpClass = []
     rings = []
@@ -105,6 +104,7 @@ def get_orings(atoms, index,possible):
     tmpClass = []
     G2=G.copy()
     G2.remove_edge(fe[1],fe[2])
+    rings2=[]
     while len(tmpClass)<8:
         try:
             path = nx.shortest_path(G2,fe[1],fe[2])
@@ -113,7 +113,7 @@ def get_orings(atoms, index,possible):
         length = len(path)
         if length in possible:
             tmpClass.append(int(len(path)/2))
-            rings.append(path)
+            rings2.append(path)
             if length == 18:
                 G2.remove_edge(path[8],path[9])
             elif length < 16 and length > 6:
@@ -133,9 +133,12 @@ def get_orings(atoms, index,possible):
             elif ((len(path)/2)%2)!=0:
                 G2.remove_node(path[int(length/2)])
 
+    rings = remove_sec(rings)
+    rings2 = remove_sec(rings2)
+    for i in rings2:
+        rings.append(i)
 
     rings = remove_dups(rings)
-    rings = remove_sec(rings)
     Class = []
     for r in rings:
         Class.append(int(len(r)/2))
@@ -510,6 +513,91 @@ def unique_rings(code):
 '''
 The following are developmental codes for testing
 '''
+
+def test_orings(atoms,index,possible):
+    cell = atoms.get_cell_lengths_and_angles()[:3]
+    repeat = []
+    possible = possible*2
+    maxring = max(possible)
+    for i,c in enumerate(cell):
+        if c/2 < maxring/2+5:
+            l = c
+            re = 1
+            while l/2 < maxring/2+5:
+                re +=1
+                l = c*re
+
+            repeat.append(re)
+        else:
+            repeat.append(1)
+    atoms2 = atoms.copy()
+    atoms2 = atoms2.repeat(repeat)
+    center = atoms2.get_center_of_mass()
+    trans = center - atoms2.positions[index]
+    atoms2.translate(trans)
+    atoms2.wrap()
+
+    cutoff = neighborlist.natural_cutoffs(atoms2,mult = 1.05)
+    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
+    nl.update(atoms2)
+    matrix = nl.get_connectivity_matrix(sparse=False)
+    m = matrix.copy()
+    G = nx.from_numpy_matrix(matrix)
+
+    neighbs = nx.neighbors(G,index)
+    fe = []
+    for n in neighbs:
+        if atoms2[n].symbol != 'O':
+            fe.append(n)
+    fe.append(index)
+
+    tmpClass = []
+    rings = []
+    G2 = G.copy()
+    G2.remove_edge(fe[0],fe[2])
+    pr = sorted(possible)
+    rings = []
+
+    for q in pr:
+        tmprings = []
+        paths = nx.all_simple_paths(G2,fe[0],fe[2],cutoff=q-1)
+        for p in paths:
+            tmprings.append(p)
+        for r in tmprings:
+            length =len(r)
+            if length in possible:
+                if ((len(r)/2)%2)==0:
+                    try:
+                        G2.remove_node(r[int(length/2-1)])
+                    except:
+                        2+2
+                elif ((len(r)/2)%2)!=0:
+                    try:
+                        G2.remove_node(r[int(length/2)])
+                    except:
+                        2+2
+
+                rings.append(r)
+    rings = remove_dups(rings)
+    rings = remove_sec(rings)
+    Class = []
+    for r in rings:
+        Class.append(int(len(r)/2))
+    paths = rings
+    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
+    Class.sort(reverse=True)
+
+    keepers = []
+    for i in paths:
+        for j in i:
+            if j not in keepers:
+                keepers.append(j)
+    d = [atom.index for atom in atoms2 if atom.index not in keepers]
+    del atoms2[d]
+
+
+    return Class, paths, atoms2
+
 def get_all_rings(code):
     '''
     For developmental testing only.
