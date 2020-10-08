@@ -266,9 +266,9 @@ def find_o_rings(G,index,possible):
                     G2.remove_node(path[3])
             else:
                 if (len(path)%2)==0:
-                    G.remove_node(path[int(length/2-1)])
+                    G2.remove_node(path[int(length/2-1)])
                 elif (len(path)%2)!=0:
-                    G.remove_node(path[int(length/2)])
+                    G2.remove_node(path[int(length/2)])
 
     return rings
 
