@@ -34,23 +34,29 @@ The original version of this code was written by Sichi Li in 2017.
 
 *M*: Symbol of the divalent cation you would like added to the structure. Must be a string, i.e. 'Cu'.
 
-*path*: If path is provided, structures will be saved to path location. 
+*path*: If path is provided, structures will be saved to path location.
 
 *returns*: Trajectory of atom objects for the structures created.
 
 *** monovalent(atoms, symbol, path=None)
 
-This function will place one monovalent cation into a zeolite framework that contains one aluminum atoms. The cation is placed at each of the 6 rings around the aluminum atoms. This creates 6 structures.
+This function will place one monovalent cation into a zeolite framework that contains one aluminum atom. The cation is placed at each of the rings around the aluminum atoms except for 4-MRs. This creates multiple structures.
 
-The structures will be placed in the path provided as an input. Format of the structures folder names are: D-aluminum_index-oxygen1_index,oxygen2_index.
+The structures will be placed in the path provided as an input. Format of the structures folder names are: D-##MR.
 
 *atoms*: zeolite framework in the form of an ASE atoms object, with one Al T-site.
 
+*index*: Index of the t site that the cation will be associated with (int)
+
 *symbol*: Symbol of the monovalent cation you would like added to the structure. Must be a string, i.e. 'Na'.
+
+*framework*: Framework code of the zeolite you are using, i.e. 'CHA' (str) included_rings (optional) = List of ints for rings you want to include if not specified all rings larger than 4-MR will be inlcuded.
+
+*included_rings*: List of ints for rings you want to include. If not specified all rings larger than 4-MR will be included.
 
 *path*: If path is provided, structures will be saved to path location.
 
-*returns*: Trajectory of atom objects for the structures created.
+*returns*: Trajectory of atom objects for the structures created. Locations, list of rings the cation was placed in that correlates to the images of the trajectory.
 ** zse.collections
 
 *** framework('code')
@@ -59,7 +65,7 @@ This command will load an atoms object of the zeolite code you input. Every zeol
 
 *code*: string of the 3 character IZA framework code (i.e. 'CHA' or 'MFI').
 
-*returns*: Atoms object of that zeolite framework with the lattice constants and atom positions from the IZA. 
+*returns*: Atoms object of that zeolite framework with the lattice constants and atom positions from the IZA.
 
 *** get_all_fws()
 
@@ -128,7 +134,7 @@ This function will find all the rings associated with a specific oxygen atom in 
 
 *** get_rings(atoms, index)
 
-*Warning*: This an old implementation of get_orings that does not work consistently for every framework type. 
+*Warning*: This an old implementation of get_orings that does not work consistently for every framework type.
 
 This command will list the size of the rings associated with an oxygen atom. For CHA and other zeolite frameworks with only one unique T Site, the oxygens are only associated with three rings. This may be not be true for more complicated zeolites, and further testing is required.
 
@@ -141,7 +147,7 @@ This command will list the size of the rings associated with an oxygen atom. For
 
 *** get_trings(atoms, index, possible)
 
-This function will find all the rings associated with a specific T-site in the zeolite framework. This function works by using get_orings() for each oxygen connected to the T-site, and then removing duplicate rings. 
+This function will find all the rings associated with a specific T-site in the zeolite framework. This function works by using get_orings() for each oxygen connected to the T-site, and then removing duplicate rings.
 
 *atoms*: Atoms object containing the zeolite framework. Works best if there are no extra framework atoms present.
 
@@ -160,7 +166,7 @@ This function will find all the rings associated with a specific T-site in the z
 
 *** find_orings(G, index, possible)
 
-This is a helper function for get_trings(), it is not really meant to be used on it's own. 
+This is a helper function for get_trings(), it is not really meant to be used on it's own.
 
 *** remove_dups(rings)
 
@@ -174,17 +180,17 @@ This is a helper function that removes secondary rings (random paths through the
 
 *** tring_driver(code)
 
-This is a helper function for get_trings(), and unique_rings(). It is not intended to be used on it's own. 
+This is a helper function for get_trings(), and unique_rings(). It is not intended to be used on it's own.
 
 *** unique_rings(code)
 
 This function will find all of the unique rings in a framework of sizes contained in the possible rings from get_fwrings().
 
-*code*: Zeolite framework code in string form, i.e. 'CHA'. 
+*code*: Zeolite framework code in string form, i.e. 'CHA'.
 
 *returns*: unique_tsites, unique_full, trajectories
 
-*unique_tsites*: Dictionary containing all the unique rings of each size present in the framework, listed by the T-sites in the ring. If you have used this code on CHA, and you would like to see the list of 8-MR T-sites, type: // unique_tistes[8]. 
+*unique_tsites*: Dictionary containing all the unique rings of each size present in the framework, listed by the T-sites in the ring. If you have used this code on CHA, and you would like to see the list of 8-MR T-sites, type: // unique_tistes[8].
 
 *unique_full*: Dictionary containing all the unique rings of each size present in the framework, listed by all the atom indices that make up each ring. If you have used this code on CHA, and you would like to the list of 8-MR indices, type: // unique_full[8].
 
@@ -202,7 +208,7 @@ This command will replace one atom in the zeolite framework with a new of your c
 
 *new_atom*: symbol of the element you would like to change index into, must be string.
 
-*returns*: Atoms object of the structure with the substitution. 
+*returns*: Atoms object of the structure with the substitution.
 * Future Inclusions
 
 T Site Pair Identification

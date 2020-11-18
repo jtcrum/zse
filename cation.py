@@ -110,6 +110,29 @@ def monovalent_old(atoms,symbol,path=None):
 
 def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
 
+    '''
+    This code has been updated to place the ion inside each of the rings
+    associated with the T site. The rings are found using the rings module of
+    ZSE.
+
+    INPUTS:
+    atoms = ASE atoms object of the zeolite framework
+    index = Index of the t site that the cation will be associated with (int)
+    symbol = Elemental symbol of the cation you want to use, i.e. 'Na' (str)
+    framework = Framework code of the zeolite you are using, i.e. 'CHA' (str)
+    included_rings (optional) = List of ints for rings you want to include
+                                if not specified all rings larger than 4-MR will
+                                be inlcuded.
+    path (optional) = Path for which you would like the structure files saved.
+                      If not included, structure files will not be saved.
+
+    OUTPUTS:
+    traj = ASE trajectory of all the structures generated. You can view traj
+           with ase.visualize.view.
+    locations = List of all the rings that the ion was placed in. Correlates to
+                the images in the trajectory.
+    '''
+
     from zse import rings
     import networkx as nx
     from ase import neighborlist
@@ -124,6 +147,8 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
         for p in possible:
             if p > 8:
                 included_rings.append(p)
+    else:
+        included_rings = [x*2 for x in included_rings]
     atoms2 = atoms.copy()
     cell = atoms2.get_cell_lengths_and_angles()[:3]
     repeat = []
@@ -169,7 +194,7 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
                 class_count.append(1)
             else:
                 counter = 1
-                for j in range(i-1):
+                for j in range(i):
                     if Class[i]==Class[j]:
                         counter+=1
                 class_count.append(counter)
@@ -177,6 +202,7 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
 
     # get center of mass for each ring, place ion in that ring
     traj= []
+    locations = []
     for i in range(len(paths)):
         p = paths[i]
         if len(p) in included_rings:
@@ -196,7 +222,7 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
             c_atoms = atoms+adsorbate
             c_atoms.wrap()
             traj+=[c_atoms]
-
+            locations.append('{1}MR'.format(path,str(int(len(p)/2))))
             # write POSCAR for each structure
 
             if path:
@@ -205,4 +231,4 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
                 write('{0}/D-{1}MR-{2}/POSCAR'.format(path,str(int(len(p)/2)),str(class_count[i])),c_atoms, sort = True)
 
 
-    return Class ,paths, traj, repeat
+    return traj, locations
