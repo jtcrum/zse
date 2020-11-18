@@ -57,7 +57,7 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
-def monovalent(atoms,symbol,path=None):
+def monovalent_old(atoms,symbol,path=None):
 
     '''
     This function will place one monovalent cation into a zeolite framework that
@@ -107,3 +107,102 @@ def monovalent(atoms,symbol,path=None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
 
     return traj
+
+def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
+
+    from zse import rings
+    import networkx as nx
+    from ase import neighborlist
+    from ase.data import covalent_radii, chemical_symbols
+
+    radii = {chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))}
+
+    possible = rings.get_fwrings(framework)
+    possible = possible*2
+    if included_rings == None:
+        included_rings = []
+        for p in possible:
+            if p > 8:
+                included_rings.append(p)
+    atoms2 = atoms.copy()
+    cell = atoms2.get_cell_lengths_and_angles()[:3]
+    repeat = []
+    maxring = max(possible)
+    for i,c in enumerate(cell):
+        if c/2 < maxring/2+5:
+            l = c
+            re = 1
+            while l/2 < maxring/2+5:
+                re +=1
+                l = c*re
+
+            repeat.append(re)
+        else:
+            repeat.append(1)
+    atoms2 = atoms2.repeat(repeat)
+    center = atoms2.get_center_of_mass()
+    trans = center - atoms2.positions[index]
+    atoms2.translate(trans)
+    atoms2.wrap()
+
+    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 0.95)
+    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
+    nl.update(atoms2)
+    matrix = nl.get_connectivity_matrix(sparse = False)
+    m = matrix.copy()
+    G = nx.from_numpy_matrix(matrix)
+    r = rings.find_o_rings(G,index,possible)
+    paths = rings.remove_dups(r)
+    paths = rings.remove_sec(paths)
+
+    Class = []
+    for p in paths:
+        Class.append(int(len(p)/2))
+
+    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
+    Class.sort(reverse=True)
+
+    if path:
+        class_count = []
+        for i in range(len(Class)):
+            if i == 0:
+                class_count.append(1)
+            else:
+                counter = 1
+                for j in range(i-1):
+                    if Class[i]==Class[j]:
+                        counter+=1
+                class_count.append(counter)
+
+
+    # get center of mass for each ring, place ion in that ring
+    traj= []
+    for i in range(len(paths)):
+        p = paths[i]
+        if len(p) in included_rings:
+            positions = atoms2[p].positions
+            co = sum(positions)/len(positions)
+            co -=trans
+            vector = co-atoms[index].position
+            vector = np.array(vector)
+            vhat = vector/np.linalg.norm(vector)
+
+            bond_length = radii[symbol]+2/radii[symbol]
+
+            new_p = [atoms[index].position +bond_length*vhat]
+
+            adsorbate = Atoms(symbol)
+            adsorbate.set_positions(new_p)
+            c_atoms = atoms+adsorbate
+            c_atoms.wrap()
+            traj+=[c_atoms]
+
+            # write POSCAR for each structure
+
+            if path:
+                os.makedirs('{0}/D-{1}MR-{2}'.format(path,str(int(len(p)/2)),str(class_count[i])),exist_ok=True)
+
+                write('{0}/D-{1}MR-{2}/POSCAR'.format(path,str(int(len(p)/2)),str(class_count[i])),c_atoms, sort = True)
+
+
+    return Class ,paths, traj, repeat
