@@ -38,7 +38,7 @@ The original version of this code was written by Sichi Li in 2017.
 
 *returns*: Trajectory of atom objects for the structures created.
 
-*** monovalent(atoms, symbol, path=None)
+*** monovalent(atoms, index, symbol, framework, included_rings, path=None)
 
 This function will place one monovalent cation into a zeolite framework that contains one aluminum atom. The cation is placed at each of the rings around the aluminum atoms except for 4-MRs. This creates multiple structures.
 
