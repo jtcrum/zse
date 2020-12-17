@@ -21,6 +21,87 @@ def get_fwrings(code):
     fw_rings = get_fwrings(code)
     return fw_rings
 
+def get_orings_new(atoms,index,possible):
+        cell = atoms.get_cell_lengths_and_angles()[:3]
+        repeat = []
+        possible = possible*2
+        maxring = max(possible)
+        for i,c in enumerate(cell):
+            if c/2 < maxring/2+5:
+                l = c
+                re = 1
+                while l/2 < maxring/2+5:
+                    re +=1
+                    l = c*re
+
+                repeat.append(re)
+            else:
+                repeat.append(1)
+        atoms2 = atoms.copy()
+        atoms2 = atoms2.repeat(repeat)
+        center = atoms2.get_center_of_mass()
+        trans = center - atoms2.positions[index]
+        atoms2.translate(trans)
+        atoms2.wrap()
+        atoms3 = atoms2.copy()
+        cutoff = neighborlist.natural_cutoffs(atoms2,mult = 1.05)
+        nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
+        nl.update(atoms2)
+        matrix = nl.get_connectivity_matrix(sparse=False)
+        m = matrix.copy()
+        G = nx.from_numpy_matrix(matrix)
+
+        neighbs = nx.neighbors(G,index)
+        fe = []
+        for n in neighbs:
+            if atoms2[n].symbol != 'O':
+                fe.append(n)
+        fe.append(index)
+        rings = []
+        for path in nx.all_simple_paths(G,index,fe[0],cutoff=max(possible)-1):
+            rings.append(path)
+        new_rings = []
+        for r in rings:
+            if len(r) in possible:
+                new_rings.append(r)
+        rings = new_rings
+
+        delete = []
+        for j,r in enumerate(rings):
+            flag = False
+            if len(r)>=12:
+                for i in range(1,len(r)-3,2):
+                    angle = atoms3.get_angle(r[i],r[i+2],r[i+4],mic=True)
+                    if angle < 100:
+                        delete.append(j)
+                        break
+        new_rings = []
+        for j,r in enumerate(rings):
+            if j not in delete:
+                new_rings.append(r)
+        rings = new_rings
+
+
+        rings = remove_sec(rings)
+        rings = remove_dups(rings)
+        Class = []
+        for r in rings:
+            Class.append(int(len(r)/2))
+        paths = rings
+        paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
+        Class.sort(reverse=True)
+
+        keepers = []
+        for i in paths:
+            for j in i:
+                if j not in keepers:
+                    keepers.append(j)
+        d = [atom.index for atom in atoms2 if atom.index not in keepers]
+        del atoms2[d]
+
+
+        return Class, paths, atoms2
+
 def get_orings(atoms, index,possible):
 
     '''
