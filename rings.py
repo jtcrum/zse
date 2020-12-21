@@ -72,7 +72,7 @@ def get_orings_new(atoms,index,possible):
             if len(r)>=12:
                 for i in range(1,len(r)-3,2):
                     angle = atoms3.get_angle(r[i],r[i+2],r[i+4],mic=True)
-                    if angle < 100:
+                    if angle < 90:
                         delete.append(j)
                         break
         new_rings = []
@@ -82,8 +82,9 @@ def get_orings_new(atoms,index,possible):
         rings = new_rings
 
 
-        rings = remove_sec(rings)
+        # rings = remove_sec(rings)
         rings = remove_dups(rings)
+        rings = test_com(atoms2,rings)
         Class = []
         for r in rings:
             Class.append(int(len(r)/2))
@@ -594,6 +595,19 @@ def unique_rings(code):
 '''
 The following are developmental codes for testing
 '''
+
+def test_com(atoms,paths):
+    new_paths = []
+    for path in paths:
+        positions = atoms[path].positions
+        com = sum(positions)/len(positions)
+        dist = []
+        for p in path:
+            dist.append(np.linalg.norm(atoms[p].position-com))
+        std = np.std(dist)
+        if std < .5:
+            new_paths.append(path)
+    return new_paths
 
 def test_orings(atoms,index,possible):
     cell = atoms.get_cell_lengths_and_angles()[:3]
