@@ -21,7 +21,7 @@ def get_fwrings(code):
     fw_rings = get_fwrings(code)
     return fw_rings
 
-def get_orings_new(atoms,index,possible):
+def get_orings_new(atoms, index, possible):
         cell = atoms.get_cell_lengths_and_angles()[:3]
         repeat = []
         possible = possible*2
@@ -82,9 +82,10 @@ def get_orings_new(atoms,index,possible):
         rings = new_rings
 
 
-        # rings = remove_sec(rings)
+
         rings = remove_dups(rings)
         rings = test_com(atoms2,rings)
+        rings = remove_sec(rings)
         Class = []
         for r in rings:
             Class.append(int(len(r)/2))
@@ -103,7 +104,7 @@ def get_orings_new(atoms,index,possible):
 
         return Class, paths, atoms2
 
-def get_orings(atoms, index,possible):
+def get_orings(atoms, index, possible):
 
     '''
     atoms: ASE atoms object of the zeolite framework to be analyzed
@@ -296,7 +297,7 @@ def get_rings(atoms, index):
         Class.sort(reverse=True)
     return Class
 
-def get_trings(atoms,index,possible):
+def get_trings(atoms, index, possible):
     Class, paths, atoms2, repeat = tring_driver(atoms,index,possible)
     return Class, paths, atoms2
 
@@ -312,7 +313,7 @@ def get_tsites(code):
         index+=m
     return tsites,tmult,first_ts
 
-def find_o_rings(G,index,possible):
+def find_o_rings(G, index, possible):
     '''
     This is a helper function for the get_trings function.
     It won't do much on its own.
@@ -448,7 +449,7 @@ def remove_sec(rings):
             paths.append(rings[i])
     return paths
 
-def tring_driver(atoms,index,possible,delete=True):
+def tring_driver(atoms, index, possible, delete=True):
     '''
     atoms: ASE atoms object of the zeolite framework to be analyzed
     index: (integer) index of the atom that you want to classify
