@@ -29,7 +29,7 @@ def label_osites(atoms, code):
 def label_tsites(atoms, code):
 
     z = framework(code)
-    tsites,tmult,first = get_osites(code)
+    tsites,tmult,first = get_tsites(code)
     tinds = [atom.index for atom in atoms if atom.symbol!='O']
 
     zcell = z.get_cell_lengths_and_angles()[:3]
