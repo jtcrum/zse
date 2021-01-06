@@ -1,3 +1,8 @@
+'''
+This module contains general utilities
+to be used by other functions in ZSE.
+'''
+
 from zse.collections import framework
 from zse.rings import get_osites
 from zse.rings import get_tsites
