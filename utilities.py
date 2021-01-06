@@ -1,4 +1,4 @@
-from zse.collection import framework
+from zse.collections import framework
 from zse.rings import get_osites
 from zse.rings import get_tsites
 from zse.rings import get_fwrings
