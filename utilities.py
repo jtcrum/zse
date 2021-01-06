@@ -11,6 +11,7 @@ def label_osites(atoms, code):
 
     zcell = z.get_cell_lengths_and_angles()[:3]
     acell = z.get_cell_lengths_and_angles()[:3]
+    repeat=[]
     for zc, ac in zip(zcell,acell):
         repeat.append(int(round(zc/ac)))
 
