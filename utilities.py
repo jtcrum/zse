@@ -2,6 +2,7 @@ from zse.collections import framework
 from zse.rings import get_osites
 from zse.rings import get_tsites
 from zse.rings import get_fwrings
+import numpy as np
 
 def label_osites(atoms, code):
     z = framework(code)
