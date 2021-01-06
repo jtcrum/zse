@@ -26,4 +26,4 @@ def label_osites(atoms, code):
                 j+=1
     olabel_dict = Dict
 
-    return olabel_dict
+    return olabel_dict, repeat
