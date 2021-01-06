@@ -311,6 +311,19 @@ def get_tsites(code):
         index+=m
     return tsites,tmult,first_ts
 
+def get_osites(code):
+    from zse.collections import get_osites
+    z = framework(code)
+    osites,omult = get_osites(code)
+    oinds = [atom.index for atom in z if atom.symbol=='O']
+    index = 0
+    first_os = []
+    for i,m in enumerate(omult):
+        first_os.append(oinds[index])
+        index+=m
+    return osites,omult,first_os
+
+
 def find_o_rings(G, index, possible):
     '''
     This is a helper function for the get_trings function.

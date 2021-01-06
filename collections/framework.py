@@ -20,6 +20,12 @@ def get_tsites(code):
     tmult = db.get(fw=code).data.tmult
     return tsites,tmult
 
+def get_osites(code):
+    db = connect(fieldpath)
+    osites = db.get(fw=code).data.osites
+    omult = db.get(fw=code).data.omult
+    return osites,omult
+
 def get_all_fws():
     db = connect(filepath)
     fws = []
