@@ -72,7 +72,7 @@ def get_orings_new(atoms, index, possible):
             if len(r)>=12:
                 for i in range(1,len(r)-3,2):
                     angle = atoms3.get_angle(r[i],r[i+2],r[i+4],mic=True)
-                    if angle < 90:
+                    if angle < 100:
                         delete.append(j)
                         break
         new_rings = []
@@ -82,10 +82,8 @@ def get_orings_new(atoms, index, possible):
         rings = new_rings
 
 
-
-        rings = remove_dups(rings)
-        rings = test_com(atoms2,rings)
         rings = remove_sec(rings)
+        rings = remove_dups(rings)
         Class = []
         for r in rings:
             Class.append(int(len(r)/2))
