@@ -54,3 +54,4 @@ def site_labels(atoms,code):
     tdict = label_tsites(atoms,code)
     odict = label_osites(atoms,code)
     all_labels = {**tdict,**odict}
+    return all_labels
