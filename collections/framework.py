@@ -21,7 +21,7 @@ def get_tsites(code):
     return tsites,tmult
 
 def get_osites(code):
-    db = connect(fielpath)
+    db = connect(filepath)
     osites = db.get(fw=code).data.osites
     omult = db.get(fw=code).data.omult
     return osites,omult
