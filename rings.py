@@ -323,7 +323,6 @@ def get_osites(code):
         index+=m
     return osites,omult,first_os
 
-
 def find_o_rings(G, index, possible):
     '''
     This is a helper function for the get_trings function.
@@ -526,7 +525,7 @@ def tring_driver(atoms, index, possible, delete=True):
 def unique_rings(code):
     z = framework(code)
     pr = get_fwrings(code)
-    tsites,tmult, first = get_tsites(code)
+    tsites,tmult,first = get_tsites(code)
     tinds = [atom.index for atom in z if atom.symbol!='O']
     index = 0
     firstts = []
