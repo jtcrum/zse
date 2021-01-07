@@ -133,14 +133,14 @@ def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
                 the images in the trajectory.
     '''
 
-    from zse import rings
+    from zse.collections import get_ring_sizes
     import networkx as nx
     from ase import neighborlist
     from ase.data import covalent_radii, chemical_symbols
 
     radii = {chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))}
 
-    possible = rings.get_fwrings(framework)
+    possible = get_ring_sizes(framework)
     possible = possible*2
     if included_rings == None:
         included_rings = []

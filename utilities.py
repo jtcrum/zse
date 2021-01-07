@@ -3,10 +3,34 @@ This module contains general utilities
 to be used by other functions in ZSE.
 '''
 
+__all__ = ['site_labels','get_osites','get_tsites']
+
 from zse.collections import framework
-from zse.rings import get_osites
-from zse.rings import get_tsites
 import numpy as np
+
+def get_osites(code):
+    from zse.collections.framework import get_osites
+    z = framework(code)
+    osites,omult = get_osites(code)
+    oinds = [atom.index for atom in z if atom.symbol=='O']
+    index = 0
+    first_os = []
+    for i,m in enumerate(omult):
+        first_os.append(oinds[index])
+        index+=m
+    return osites,omult,first_os
+
+def get_tsites(code):
+    from zse.collections.framework import get_tsites
+    z = framework(code)
+    tsites,tmult = get_tsites(code)
+    tinds = [atom.index for atom in z if atom.symbol!='O']
+    index = 0
+    first_ts = []
+    for i,m in enumerate(tmult):
+        first_ts.append(tinds[index])
+        index+=m
+    return tsites,tmult,first_ts
 
 def label_osites(atoms, code):
 
