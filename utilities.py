@@ -55,6 +55,17 @@ def label_tsites(atoms, code):
     return Dict
 
 def site_labels(atoms,code):
+    '''
+    This function will get the atom site labels (as defined by the IZA) for
+    your atoms object. Be sure to remove any adsorbates from your zeolite
+    framework before using this function or else it won't work. This function
+    will work with T sites that have been exchanged for Al (or any atom).
+
+    atoms: atoms object containing a zeolite you want labels for
+
+    code: the zeolite framework code of your atoms object (i.e. 'CHA')
+    '''
+
 
     tdict = label_tsites(atoms,code)
     odict = label_osites(atoms,code)
