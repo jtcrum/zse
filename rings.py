@@ -41,9 +41,6 @@ def get_orings(atoms,index,code):
 
     return ring_list, paths, ring_atoms
 
-
-
-
 # get_trings
 
 # get_fwrings
