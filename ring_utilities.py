@@ -71,21 +71,7 @@ def get_paths(G,index,ring_sizes):
     return paths
 
 def remove_non_rings(atoms, paths):
-    # this first part is a trick to cut out some of the paths that are just
-    # random walks through the framework, and not actual rings
-    # here, we assume that fir any T-T-T angle in a path is less than 100, that
-    # path can not be a true 8-MR or larger.
-    delete = []
-    for j,r in enumerate(paths):
-        flag = False
-        if len(r) >= 16:
-            for i in range(1, len(r)-3,2):
-                angle = atoms.get_angle(r[i],r[i+2],r[i+4],mic=True)
-                if angle < 100:
-                    paths.remove(r)
-                    break
-
-    # turn each path into a circular array to remove any duplicates
+    # turn each path into a circular array to find and remove any duplicates
     paths = remove_dups(paths)
 
     # remove paths that contain smaller rings becuase these are likely not
@@ -93,6 +79,28 @@ def remove_non_rings(atoms, paths):
     # there are a ton of rules I have written to find these "secondary rings"
     # there is probably a better way to do this, I would love other's input.
     paths = remove_sec(paths)
+
+    # this part is a trick to cut out some of the paths that are just
+    # random walks through the framework, and not actual rings
+    # here, we assume that fir any T-T-T angle in a path is less than 100, that
+    # path can not be a true 8-MR or larger.
+    delete = []
+    for j,r in enumerate(paths):
+        flag = False
+        if len(r) > 16:
+            r2 = r.copy()
+            for x in r[:4]:
+                r2.append(x)
+            for i in range(1, len(r2)-3,2):
+                angle = int(round(atoms.get_angle(r2[i],r2[i+2],r2[i+4],mic=True)))
+                if angle < 100:
+                    delete.append(j)
+                    break
+    tmp_paths = paths.copy()
+    paths = []
+    for j,r in enumerate(tmp_paths):
+        if j not in delete:
+            paths.append(r)
 
     return paths
 
