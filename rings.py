@@ -8,10 +8,11 @@ stored within the collections module of this package. Check the examples page on
 github (github.com/jtcrum/zse/examples) for specifics on how to use.
 '''
 
-__all__ = ['get_orings','get_trings']
+__all__ = ['get_orings','get_trings','get_fwrings']
 
-from zse.collections import get_ring_sizes
+from zse.collections import get_ring_sizes, framework
 from zse.ring_utilities import *
+from zse.utilities import *
 
 # get_orings
 
@@ -27,7 +28,7 @@ def get_orings(atoms,index,code):
     code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
 
     OUTPUTS:
-    Class:      (list) The size of rings associated with the oxygen.
+    ring_list:      (list) The size of rings associated with the oxygen.
     paths:      (2d array) The actual atom indices that compose found rings.
     ring_atoms: (ASE atoms object) all the rings found
     '''
@@ -69,7 +70,7 @@ def get_trings(atoms,index,code):
     code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
 
     OUTPUTS:
-    Class:      (list) The size of rings associated with the oxygen.
+    ring_list:      (list) The size of rings associated with the oxygen.
     paths:      (2d array) The actual atom indices that compose found rings.
     ring_atoms: (ASE atoms object) all the rings found
     '''
@@ -103,3 +104,54 @@ def get_trings(atoms,index,code):
     return ring_list, paths, ring_atoms
 
 # get_fwrings
+def get_fwrings(code):
+    '''
+    Function to find all the unique rings in a zeolite framework.
+
+    INPUTS:
+    code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
+
+    OUTPUTS:
+    index_paths:    (dictionary) {ring length : indices of atoms in ring}
+    label_paths:    (dictionary) {ring length : site labels of atoms in ring}
+    trajectories:   (dictionary of atoms objects)  -
+                    {ring length : [atoms objects for that size ring]}
+    '''
+
+    # First, get some basic info we will need about the framework
+    # atoms object, possible ring sizes, and the index of each o-site type
+    atoms = framework(code)
+    ring_sizes = get_ring_sizes(code)
+    osites,omults,oinds = get_osites(code)
+
+    # now we find all the rings associated with each oxygen type in the fw
+    # this in theory should find us every possible type of ring in the fw
+    paths = []
+    for o in oinds:
+        paths += get_orings(atoms,o,code)[1]
+    paths = remove_dups(paths)
+
+    # now we want to get the t-site and o-site labels
+    repeat = atoms_to_graph(atoms,0,max(ring_sizes)*2)[2]
+    atoms = atoms.repeat(repeat)
+    labels = site_labels(atoms,code)
+
+    # now convert all the paths from index form into site label form
+    index_paths = paths
+    label_paths = []
+    for path in index_paths:
+        l = []
+        for p in path:
+            l.append(labels[p])
+        label_paths.append(l)
+
+    # now we want to remove duplicate rings based on the label_paths
+    # this will also give us the paths in a conveinent dictionary
+    index_paths, label_paths = remove_labeled_dups(index_paths, label_paths, ring_sizes)
+
+    # last but not least, let's make an atoms object for each ring type so that
+    # we can visualize them later
+    # this will be a dictionary of trajectories
+    trajectories = dict_to_atoms(index_paths,atoms)
+
+    return index_paths, label_paths, trajectories

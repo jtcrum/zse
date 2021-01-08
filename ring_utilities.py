@@ -1,4 +1,5 @@
-__all__ = ['atoms_to_graph','get_paths','remove_non_rings','paths_to_atoms']
+__all__ = ['atoms_to_graph','get_paths','remove_non_rings','paths_to_atoms',
+           'remove_dups','remove_labeled_dups','dict_to_atoms']
 
 '''
 This module contains utilities to be used by the rings.py module.
@@ -32,8 +33,8 @@ def atoms_to_graph(atoms,index,max_ring):
             repeat.append(re)
         else:
             repeat.append(1)
-
-    large_atoms = atoms.repeat(repeat)
+    large_atoms = atoms.copy()
+    large_atoms = large_atoms.repeat(repeat)
     center = large_atoms.get_center_of_mass()
     trans = center - large_atoms.positions[index]
     large_atoms.translate(trans)
@@ -186,6 +187,60 @@ def paths_to_atoms(atoms,paths):
             if j not in keepers:
                 keepers.append(j)
     d = [atom.index for atom in atoms if atom.index not in keepers]
-    del atoms[d]
+    tmp_atoms = atoms.copy()
+    del tmp_atoms[d]
 
-    return atoms
+    return tmp_atoms
+
+def remove_labeled_dups(index_paths,label_paths,ring_sizes):
+
+    # first make dictionaries
+    label_rings = {}
+    index_rings = {}
+    for i,r in enumerate(label_paths):
+        length = int(len(r)/2)
+        if length not in label_rings:
+            label_rings[length] = [r]
+            index_rings[length] = [index_paths[i]]
+        else:
+            label_rings[length].append(r)
+            index_rings[length].append(index_paths[i])
+
+    # now we will remove duplicates
+    for length in ring_sizes:
+        ring_tlist = label_rings[length]
+        ring_full  = index_rings[length]
+        d = []
+        for i in range(len(ring_tlist)):
+            for j in range((i+1), len(ring_tlist)):
+                st1 = ' '.join(map(str,ring_tlist[i]))
+                st2 = ' '.join(map(str,ring_tlist[j]))
+                st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
+                    d.append(int(j))
+        tmp1 = []
+        tmp2 = []
+        for i in range(len(ring_tlist)):
+            if i not in d:
+                tmp1.append(ring_tlist[i])
+                tmp2.append(ring_full[i])
+        label_rings[length] = tmp1
+        index_rings[length] = tmp2
+
+    return  index_rings, label_rings
+
+def dict_to_atoms(index_paths,atoms):
+    trajectories = {}
+    com = atoms.get_center_of_mass()
+    for length in index_paths.keys():
+        paths = index_paths[length]
+        tmp_traj = []
+        for p in paths:
+            tmp_atoms = paths_to_atoms(atoms,[p])
+            trans = com-tmp_atoms[0].position
+            tmp_atoms.translate(trans)
+            tmp_atoms.wrap()
+            tmp_traj+=[tmp_atoms]
+        trajectories[length]=tmp_traj
+
+    return trajectories
