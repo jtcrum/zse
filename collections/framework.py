@@ -9,7 +9,7 @@ def framework(code):
     atoms = db.get_atoms(fw = code)
     return atoms
 
-def get_fwrings(code):
+def get_ring_sizes(code):
     db = connect(filepath)
     fw_rings = db.get(fw = code).data.rings
     return fw_rings
