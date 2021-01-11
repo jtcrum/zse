@@ -1,3 +1,7 @@
+__all__ = ['divalent','monovalent']
+
+from zse.cation_utilities import *
+from zse.ring_utilities import *
 from ase.io import read, write
 from ase import Atoms, Atoms
 import math
@@ -57,6 +61,67 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
+def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
+
+    '''
+    This code has been updated to place the ion inside each of the rings
+    associated with the T site. The rings are found using the rings module of
+    ZSE.
+
+    INPUTS:
+    atoms = ASE atoms object of the zeolite framework
+    index = Index of the t site that the cation will be associated with (int)
+    symbol = Elemental symbol of the cation you want to use, i.e. 'Na' (str)
+    code = Framework code of the zeolite you are using, i.e. 'CHA' (str)
+    included_rings (optional) = List of ints for rings you want to include
+                                if not specified all rings larger than 4-MR will
+                                be inlcuded.
+    path (optional) = Path for which you would like the structure files saved.
+                      If not included, structure files will not be saved.
+
+    OUTPUTS:
+    traj = ASE trajectory of all the structures generated. You can view traj
+           with ase.visualize.view.
+    locations = List of all the rings that the ion was placed in. Correlates to
+                the images in the trajectory.
+    '''
+
+    # let's import the modules we will need to make this work
+    from zse.collections import get_ring_sizes
+    import networkx as nx
+    from ase.data import covalent_radii, chemical_symbols
+
+    # I will use these radii to approximate bond lengths
+    radii = {chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))}
+
+    # get all the rings associated with the T site
+    # this follows the same steps as rings.get_trings()
+    ring_sizes = get_ring_sizes(code)*2
+    max_ring = max(ring_sizes)
+    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    import networkx as nx
+    paths = []
+    for n in nx.neighbors(G,index):
+        paths = paths+get_paths(G,n,ring_sizes)
+    paths = remove_non_rings(large_atoms, paths)
+
+    # which rings should be included
+    if included_rings == None:
+        included_rings = []
+        for p in ring_sizes:
+            if p > 8:
+                included_rings.append(p)
+    else:
+        included_rings = [x*2 for x in included_rings]
+
+    # get a list of all the rings and their sizes present
+    Class, class_count, paths = count_rings(paths)
+
+    # add the cation to each ring, put structure in a trajectory
+    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
+
+    return traj, locations
+
 def monovalent_old(atoms,symbol,path=None):
 
     '''
@@ -107,128 +172,3 @@ def monovalent_old(atoms,symbol,path=None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
 
     return traj
-
-def monovalent(atoms,index,symbol,framework,included_rings=None,path=None):
-
-    '''
-    This code has been updated to place the ion inside each of the rings
-    associated with the T site. The rings are found using the rings module of
-    ZSE.
-
-    INPUTS:
-    atoms = ASE atoms object of the zeolite framework
-    index = Index of the t site that the cation will be associated with (int)
-    symbol = Elemental symbol of the cation you want to use, i.e. 'Na' (str)
-    framework = Framework code of the zeolite you are using, i.e. 'CHA' (str)
-    included_rings (optional) = List of ints for rings you want to include
-                                if not specified all rings larger than 4-MR will
-                                be inlcuded.
-    path (optional) = Path for which you would like the structure files saved.
-                      If not included, structure files will not be saved.
-
-    OUTPUTS:
-    traj = ASE trajectory of all the structures generated. You can view traj
-           with ase.visualize.view.
-    locations = List of all the rings that the ion was placed in. Correlates to
-                the images in the trajectory.
-    '''
-
-    from zse.collections import get_ring_sizes
-    import networkx as nx
-    from ase import neighborlist
-    from ase.data import covalent_radii, chemical_symbols
-
-    radii = {chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))}
-
-    possible = get_ring_sizes(framework)
-    possible = possible*2
-    if included_rings == None:
-        included_rings = []
-        for p in possible:
-            if p > 8:
-                included_rings.append(p)
-    else:
-        included_rings = [x*2 for x in included_rings]
-    atoms2 = atoms.copy()
-    cell = atoms2.get_cell_lengths_and_angles()[:3]
-    repeat = []
-    maxring = max(possible)
-    for i,c in enumerate(cell):
-        if c/2 < maxring/2+5:
-            l = c
-            re = 1
-            while l/2 < maxring/2+5:
-                re +=1
-                l = c*re
-
-            repeat.append(re)
-        else:
-            repeat.append(1)
-    atoms2 = atoms2.repeat(repeat)
-    center = atoms2.get_center_of_mass()
-    trans = center - atoms2.positions[index]
-    atoms2.translate(trans)
-    atoms2.wrap()
-
-    cutoff = neighborlist.natural_cutoffs(atoms2, mult = 0.95)
-    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
-    nl.update(atoms2)
-    matrix = nl.get_connectivity_matrix(sparse = False)
-    m = matrix.copy()
-    G = nx.from_numpy_matrix(matrix)
-    r = rings.find_o_rings(G,index,possible)
-    paths = rings.remove_dups(r)
-    paths = rings.remove_sec(paths)
-
-    Class = []
-    for p in paths:
-        Class.append(int(len(p)/2))
-
-    paths = [x for _,x in sorted(zip(Class,paths),reverse=True)]
-    Class.sort(reverse=True)
-
-    if path:
-        class_count = []
-        for i in range(len(Class)):
-            if i == 0:
-                class_count.append(1)
-            else:
-                counter = 1
-                for j in range(i):
-                    if Class[i]==Class[j]:
-                        counter+=1
-                class_count.append(counter)
-
-
-    # get center of mass for each ring, place ion in that ring
-    traj= []
-    locations = []
-    for i in range(len(paths)):
-        p = paths[i]
-        if len(p) in included_rings:
-            positions = atoms2[p].positions
-            co = sum(positions)/len(positions)
-            co -=trans
-            vector = co-atoms[index].position
-            vector = np.array(vector)
-            vhat = vector/np.linalg.norm(vector)
-
-            bond_length = radii[symbol]+2/radii[symbol]
-
-            new_p = [atoms[index].position +bond_length*vhat]
-
-            adsorbate = Atoms(symbol)
-            adsorbate.set_positions(new_p)
-            c_atoms = atoms+adsorbate
-            c_atoms.wrap()
-            traj+=[c_atoms]
-            locations.append('{1}MR'.format(path,str(int(len(p)/2))))
-            # write POSCAR for each structure
-
-            if path:
-                os.makedirs('{0}/D-{1}MR-{2}'.format(path,str(int(len(p)/2)),str(class_count[i])),exist_ok=True)
-
-                write('{0}/D-{1}MR-{2}/POSCAR'.format(path,str(int(len(p)/2)),str(class_count[i])),c_atoms, sort = True)
-
-
-    return traj, locations
