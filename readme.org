@@ -18,16 +18,12 @@ Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/sit
 
 * Current Modules
 To see how to use each of the modules, please visit [[/examples][examples]].
-** zse.cation
-
-** zse.collections
-
-** zse.protonate
-
-** zse.rings
-
-** zse.substitute
-
+- zse.cation
+- zse.collections
+- zse.protonate
+- zse.rings
+- zse.substitute
+- zse.utilities
 * Contributions
 
 If there is something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
