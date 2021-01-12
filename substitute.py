@@ -1,3 +1,5 @@
+__all__ = ['tsub']
+
 from ase.io import read, write
 
 def tsub(atoms,index,new_atom):
