@@ -79,24 +79,52 @@ def remove_non_rings(atoms, paths):
     # actual rings
     # there are a ton of rules I have written to find these "secondary rings"
     # there is probably a better way to do this, I would love other's input.
-    paths = remove_sec(paths)
 
+    '''
+    This portion doesn't seem to be necessary anymore.
+    paths = remove_sec(paths)
+    '''
     # this part is a trick to cut out some of the paths that are just
     # random walks through the framework, and not actual rings
-    # here, we assume that fir any T-T-T angle in a path is less than 100, that
-    # path can not be a true 8-MR or larger.
+    # here we have some cutoff distance for cross ring T-T distance
+    # if the distance is less than the cutoff it probably isn't a ring
+    # for odd MR we need a different function so there is no cross ring T-T
+
+
     delete = []
     for j,r in enumerate(paths):
-        flag = False
-        if len(r) > 16:
+        n = int(len(r)/2)
+        cutoff = n/4
+        if cutoff < 2:
+            cutoff = 2
+        if n%2 == 0 and n > 5:
+            distances = []
+            inner_flag = False
+            for x in range(1,n,2):
+                dist = atoms.get_distance(r[x],r[x+n])
+                distances.append(dist)
+                if dist < n-cutoff:
+                    delete.append(j)
+                    inner_flag = True
+                    break
+            if inner_flag == False:
+                outer_flag = False
+                for d in distances:
+                    if d > n - math.floor(n/6):
+                        outer_flag = True
+                        break
+                if outer_flag == False:
+                    delete.append(j)
+        if n%2 != 0 and n > 5:
             r2 = r.copy()
-            for x in r[:4]:
-                r2.append(x)
-            for i in range(1, len(r2)-3,2):
-                angle = int(round(atoms.get_angle(r2[i],r2[i+2],r2[i+4],mic=True)))
-                if angle < 100:
+            r2.append(r[:2])
+            for x in range(1,n,2):
+                dist1 = atoms.get_distance(r2[x],r2[x+n-1])
+                dist2 = atoms.get_distance(r2[x],r2[x+n+1])
+                if dist1 < n-cutoff or dist2 < n-cutoff:
                     delete.append(j)
                     break
+
     tmp_paths = paths.copy()
     paths = []
     for j,r in enumerate(tmp_paths):
