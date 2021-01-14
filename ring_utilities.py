@@ -94,7 +94,7 @@ def remove_non_rings(atoms, paths):
     delete = []
     for j,r in enumerate(paths):
         n = int(len(r)/2)
-        cutoff = n/4
+        cutoff = n/5
         if cutoff < 2:
             cutoff = 2
         if n%2 == 0 and n > 5:
