@@ -115,9 +115,11 @@ def site_labels(atoms,code):
     poszo = z[zo_inds].get_scaled_positions()
     poszt = z[zt_inds].get_scaled_positions()
 
+    scaledp = atoms.get_scaled_positions()
+
     Dict = {}
     for a in atoms:
-        pa = a.scaled_position
+        pa = scaledp[a.index]
         sym = a.symbol
         if sym == 'O':
             diffp = poszo - pa
