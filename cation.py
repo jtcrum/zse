@@ -61,7 +61,7 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
-def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
+def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None):
 
     '''
     This code has been updated to place the ion inside each of the rings
@@ -78,6 +78,8 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
                                 be inlcuded.
     path (optional) = Path for which you would like the structure files saved.
                       If not included, structure files will not be saved.
+    bvect (optional) = Manually specify the bond length between the cation and 
+                        atom index
 
     OUTPUTS:
     traj = ASE trajectory of all the structures generated. You can view traj
@@ -118,6 +120,6 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
     Class, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
-    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
+    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
 
     return traj, locations
