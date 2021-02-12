@@ -115,6 +115,16 @@ def remove_non_rings(atoms, paths):
                         break
                 if outer_flag == False:
                     delete.append(j)
+            if inner_flag == False and outer_flag == True:
+                last_flag = False
+                for d in distances:
+                    if d > .94*n:
+                        last_flag = False
+                        break
+                    else:
+                        last_flag = True
+                if last_flag:
+                    delete.append(j)
         if n%2 != 0 and n > 5:
             r2 = r.copy()
             r2.append(r[:2])
