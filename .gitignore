@@ -1,0 +1,15 @@
+# byte-compiled files
+__pycache__/
+*.py[cod]
+
+./*/__pycache__
+
+# Jupyter Notebook Checkpoints
+./*/.ipynb_checkpoints
+
+# DS_Store
+*.DS_Store
+./*/.DS_Store
+
+#Emacs Files
+_minted-readme

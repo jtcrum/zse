@@ -61,7 +61,7 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
-def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None):
+def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
 
     '''
     This code has been updated to place the ion inside each of the rings
@@ -78,8 +78,11 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
                                 be inlcuded.
     path (optional) = Path for which you would like the structure files saved.
                       If not included, structure files will not be saved.
+<<<<<<< HEAD
     bvect (optional) = Manually specify the bond length between the cation and
                         atom index
+=======
+>>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
 
     OUTPUTS:
     traj = ASE trajectory of all the structures generated. You can view traj
@@ -129,7 +132,11 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
     Class, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
+<<<<<<< HEAD
     large_atoms = atoms.repeat(repeat)
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
+=======
+    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
+>>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
 
     return traj, locations

@@ -27,7 +27,7 @@ def count_rings(paths):
 
     return Class, class_count, paths
 
-def add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path=None,bvect=None):
+def add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path=None):
     traj= []
     locations = []
     for i in range(len(paths)):
@@ -40,11 +40,8 @@ def add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_c
             vector = co-atoms[index].position
             vector = np.array(vector)
             vhat = vector/np.linalg.norm(vector)
-            
-            if bvect:
-                bond_length = bvect
-            else:
-                bond_length = radii[symbol]+2/radii[symbol]
+
+            bond_length = radii[symbol]+2/radii[symbol]
 
             new_p = [atoms[index].position +bond_length*vhat]
 
