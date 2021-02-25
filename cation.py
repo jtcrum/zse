@@ -79,8 +79,11 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
     path (optional) = Path for which you would like the structure files saved.
                       If not included, structure files will not be saved.
 <<<<<<< HEAD
+<<<<<<< HEAD
     bvect (optional) = Manually specify the bond length between the cation and
                         atom index
+=======
+>>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
 =======
 >>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
 
@@ -133,8 +136,12 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
 
     # add the cation to each ring, put structure in a trajectory
 <<<<<<< HEAD
+<<<<<<< HEAD
     large_atoms = atoms.repeat(repeat)
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
+=======
+    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
+>>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
 =======
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
 >>>>>>> parent of 78d08c9... Modified monovalent cation addition to specify exact bond lengths rather than using the atomic radii. -CW
