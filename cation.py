@@ -2,6 +2,7 @@ __all__ = ['divalent','monovalent']
 
 from zse.cation_utilities import *
 from zse.ring_utilities import *
+from zse.utilities import *
 from ase.io import read, write
 from ase import Atoms, Atoms
 import math
@@ -61,13 +62,12 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
-def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
+def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None):
 
     '''
     This code has been updated to place the ion inside each of the rings
     associated with the T site. The rings are found using the rings module of
     ZSE.
-
     INPUTS:
     atoms = ASE atoms object of the zeolite framework
     index = Index of the t site that the cation will be associated with (int)
@@ -80,7 +80,6 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
                       If not included, structure files will not be saved.
     bvect (optional) = Manually specify the bond length between the cation and
                         atom index
-
     OUTPUTS:
     traj = ASE trajectory of all the structures generated. You can view traj
            with ase.visualize.view.
@@ -129,10 +128,8 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None):
     Class, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
-
     large_atoms = atoms.repeat(repeat)
+    large_atoms,translation = center(large_atoms,index)
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
-
-    traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path)
 
     return traj, locations

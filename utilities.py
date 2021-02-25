@@ -3,10 +3,20 @@ This module contains general utilities
 to be used by other functions in ZSE.
 '''
 
-__all__ = ['site_labels','get_osites','get_tsites','scale_cell']
+__all__ = ['site_labels','get_osites','get_tsites','scale_cell','center']
 
 from zse.collections import framework
 import numpy as np
+
+def center(atoms,index):
+    '''
+    This function will center an atoms object around an index.
+    '''
+    com = atoms.get_center_of_mass()
+    trans = com-atoms[index].position
+    atoms.translate(trans)
+    atoms.wrap()
+    return atoms,trans
 
 def get_osites(code):
     from zse.collections.framework import get_osites
