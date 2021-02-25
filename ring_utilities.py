@@ -7,8 +7,9 @@ This module contains utilities to be used by the rings.py module.
 
 import numpy as np
 import math
+from zse.utilities import *
 
-def atoms_to_graph(atoms,index,max_ring):
+def atoms_to_graph(atoms,index,max_ring,scale = True):
     '''
     Helper function to repeat a unit cell enough times to capture the largest
     possible ring, and turn the new larger cell into a graph object.
@@ -19,8 +20,12 @@ def atoms_to_graph(atoms,index,max_ring):
     repeat = array showing the number of times the cell was repeated: [x,y,z]
     '''
 
-    # first, repeat cell, center the cell, and wrap the atoms back into the cell
-    cell = atoms.get_cell_lengths_and_angles()[:3]
+    # first scale the unit cell so the average Si-Si distance = 3.1 Å
+    if scale:
+        atoms = scale_cell(atoms)
+
+    # repeat cell, center the cell, and wrap the atoms back into the cell
+    cell = atoms.cell.cellpar()[:3]
     repeat = []
     for i,c in enumerate(cell):
         if c/2 < max_ring/2+5:
@@ -40,6 +45,23 @@ def atoms_to_graph(atoms,index,max_ring):
     large_atoms.translate(trans)
     large_atoms.wrap()
 
+    # remove atoms that won't contribute to wrings
+    from ase.geometry import get_distances
+    cell = large_atoms.get_cell()
+    pbc = [1,1,1]
+    p1 = large_atoms[index].position
+    positions = large_atoms.get_positions()
+    distances = get_distances(p1,positions)[1][0]
+
+    delete = []
+    for i,l in enumerate(distances):
+        if l>max_ring/2+5:
+            delete.append(i)
+    inds = [atom.index for atom in large_atoms]
+    large_atoms.set_tags(inds)
+    atoms = large_atoms.copy()
+    del large_atoms[delete]
+
     # we need a neighborlist (connectivity matrix) before we can make our graph
     from ase import neighborlist
     cutoff = neighborlist.natural_cutoffs(large_atoms, mult = 1.05)
@@ -50,7 +72,7 @@ def atoms_to_graph(atoms,index,max_ring):
     # now we make the graph
     import networkx as nx
     G = nx.from_numpy_matrix(matrix)
-
+    # G.remove_nodes_from(delete)
     return G, large_atoms, repeat
 
 def get_paths(G,index,ring_sizes):
@@ -114,16 +136,6 @@ def remove_non_rings(atoms, paths):
                         outer_flag = True
                         break
                 if outer_flag == False:
-                    delete.append(j)
-            if inner_flag == False and outer_flag == True:
-                last_flag = False
-                for d in distances:
-                    if d > .94*n:
-                        last_flag = False
-                        break
-                    else:
-                        last_flag = True
-                if last_flag:
                     delete.append(j)
         if n%2 != 0 and n > 5:
             r2 = r.copy()

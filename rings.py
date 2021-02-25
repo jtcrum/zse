@@ -39,6 +39,8 @@ def get_orings(atoms,index,code):
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph
     G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    index = [atom.index for atom in large_atoms if atom.tag==index][0]
+
 
     # get the closest neighbor of the oxygen, and find all possible rings
     # between that oxygen and its neighbor
@@ -50,10 +52,18 @@ def get_orings(atoms,index,code):
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
     ring_list = [int(len(p)/2) for p in paths]
-    paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    paths2 = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    tmp_paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    paths = []
+    for p in tmp_paths:
+        temp = []
+        for i in p:
+            temp.append(large_atoms[i].tag)
+        paths.append(temp)
+
     ring_list.sort(reverse=True)
 
-    ring_atoms = paths_to_atoms(large_atoms,paths)
+    ring_atoms = paths_to_atoms(large_atoms,paths2)
 
     return ring_list, paths, ring_atoms
 
@@ -81,6 +91,7 @@ def get_trings(atoms,index,code):
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph
     G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    index = [atom.index for atom in large_atoms if atom.tag==index][0]
 
     # to find all the rings associated with a T site, we need all the rings
     # associated with each oxygen bound to that T site. We will use networkx
@@ -96,10 +107,17 @@ def get_trings(atoms,index,code):
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
     ring_list = [int(len(p)/2) for p in paths]
-    paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    paths2 = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    tmp_paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    paths = []
+    for p in tmp_paths:
+        temp = []
+        for i in p:
+            temp.append(large_atoms[i].tag)
+        paths.append(temp)
     ring_list.sort(reverse=True)
 
-    ring_atoms = paths_to_atoms(large_atoms,paths)
+    ring_atoms = paths_to_atoms(large_atoms,paths2)
 
     return ring_list, paths, ring_atoms
 

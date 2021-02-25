@@ -3,7 +3,7 @@ This module contains general utilities
 to be used by other functions in ZSE.
 '''
 
-__all__ = ['site_labels','get_osites','get_tsites']
+__all__ = ['site_labels','get_osites','get_tsites','scale_cell']
 
 from zse.collections import framework
 import numpy as np
@@ -38,8 +38,8 @@ def label_osites(atoms, code):
     osites,omult,first = get_osites(code)
 
 
-    zcell = z.get_cell_lengths_and_angles()[:3]
-    acell = atoms.get_cell_lengths_and_angles()[:3]
+    zcell = z.cell.cellpar()[:3]
+    acell = atoms.cell.cellpar()[:3]
     repeat=[]
     for zc, ac in zip(zcell,acell):
         repeat.append(int(round(ac/zc)))
@@ -64,8 +64,8 @@ def label_tsites(atoms, code):
     tsites,tmult,first = get_tsites(code)
     tinds = [atom.index for atom in z if atom.symbol!='O']
 
-    zcell = z.get_cell_lengths_and_angles()[:3]
-    acell = atoms.get_cell_lengths_and_angles()[:3]
+    zcell = z.cell.cellpar()[:3]
+    acell = atoms.cell.cellpar()[:3]
     repeat=[]
     for zc, ac in zip(zcell,acell):
         repeat.append(int(round(ac/zc)))
@@ -82,6 +82,32 @@ def label_tsites(atoms, code):
                 j+=1
 
     return Dict
+
+def scale_cell(atoms):
+    from ase.geometry import get_distances
+    diff = 1
+    sil = 3.1
+    mult = 1
+    si = [atom.index for atom in atoms if atom.symbol=='Si']
+    zsi = atoms[si]
+    while diff > 0.01:
+        cell = atoms.cell.cellpar()
+        for i in range(3):
+            cell[i] = cell[i]*mult
+        zsi.set_cell(cell,scale_atoms=True)
+        ncell = zsi.get_cell()
+        positions = zsi.get_positions()
+        distances = get_distances(positions,cell=ncell,pbc=[1,1,1])[1]
+        temp = []
+        for line in distances:
+            masked_line = np.ma.masked_equal(line,0.0,copy=False)
+            temp.append(masked_line.min())
+        silm = np.average(temp)
+        diff = abs(silm-sil)
+        mult = sil/silm
+    atoms.set_cell(cell,scale_atoms=True)
+
+    return atoms
 
 def site_labels(atoms,code):
     '''
@@ -101,8 +127,8 @@ def site_labels(atoms,code):
     all_labels = {**tdict,**odict}
 
     z = framework(code)
-    zcell = z.get_cell_lengths_and_angles()[:3]
-    acell = atoms.get_cell_lengths_and_angles()[:3]
+    zcell = z.cell.cellpar()[:3]
+    acell = atoms.cell.cellpar()[:3]
     repeat=[]
     for zc, ac in zip(zcell,acell):
         repeat.append(int(round(ac/zc)))

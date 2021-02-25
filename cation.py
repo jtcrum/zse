@@ -78,7 +78,7 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
                                 be inlcuded.
     path (optional) = Path for which you would like the structure files saved.
                       If not included, structure files will not be saved.
-    bvect (optional) = Manually specify the bond length between the cation and 
+    bvect (optional) = Manually specify the bond length between the cation and
                         atom index
 
     OUTPUTS:
@@ -101,11 +101,20 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
     ring_sizes = get_ring_sizes(code)*2
     max_ring = max(ring_sizes)
     G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    temp_index = [atom.index for atom in large_atoms if atom.tag==index][0]
+
     import networkx as nx
     paths = []
-    for n in nx.neighbors(G,index):
+    for n in nx.neighbors(G,temp_index):
         paths = paths+get_paths(G,n,ring_sizes)
-    paths = remove_non_rings(large_atoms, paths)
+    temp_paths = remove_non_rings(large_atoms, paths)
+
+    paths = []
+    for p in temp_paths:
+        temp = []
+        for i in p:
+            temp.append(large_atoms[i].tag)
+        paths.append(temp)
 
     # which rings should be included
     if included_rings == None:
@@ -120,6 +129,7 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
     Class, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
+    large_atoms = atoms.repeat(repeat)
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
 
     return traj, locations
