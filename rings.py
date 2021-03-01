@@ -8,7 +8,7 @@ stored within the collections module of this package. Check the examples page on
 github (github.com/jtcrum/zse/examples) for specifics on how to use.
 '''
 
-__all__ = ['get_orings','get_trings','get_fwrings']
+__all__ = ['get_orings','get_trings','get_fwrings','get_vertex_symbols']
 
 from zse.collections import get_ring_sizes, framework
 from zse.ring_utilities import *
@@ -173,3 +173,64 @@ def get_fwrings(code):
     trajectories = dict_to_atoms(index_paths,atoms)
 
     return index_paths, label_paths, trajectories
+
+def get_vertex_symbols(code,index):
+    '''
+    Function to find all the the shortest rings connecting each
+    oxygen-oxygen pair associated with a T-site
+
+    INPUTS:
+    code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
+    index:      (integer) index of the T-site that you want to classify
+
+    OUTPUTS:
+    vertex_symbols: (dictionary) keys are the O-site labels, and values are the
+                    indices of the atoms connecting those oxygens
+    trajectory:     (ASE atoms objects) that include the rings for each
+                    oxygen-oxygen pair
+    '''
+
+    # get the possible rings of this framework from the IZA
+    # the maximum ring size determines how many times to repeat the unit cell
+    ring_sizes = get_ring_sizes(code)*2
+    max_ring = max(ring_sizes)
+
+    # get an atoms object of the framework
+    atoms = framework(code)
+
+    # repeat the unit cell so it is large enough to capture the max ring size
+    # also turn this new larger unit cell into a graph
+    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    index = [atom.index for atom in large_atoms if atom.tag==index][0]
+
+    # get the T-site and O-site labels for each atom in the framework
+    atoms = atoms.repeat(repeat)
+    labels = site_labels(atoms,code)
+
+    # get each o-o pair for the T-site
+    vertices = get_vertices(G,index)
+
+    # set up a dictionary to stare results
+    vertex_symbols = {}
+
+    # got through each o-o pair and find the shortest paths
+    traj = []
+    for i,v in enumerate(vertices):
+        o1 = v[0]
+        o2 = v[1]
+        v_label = '{0}-{1}'.format(labels[large_atoms[o1].tag],labels[large_atoms[o2].tag])
+
+        # this finds the shortest path between the two
+        path, l = shortest_valid_path(G,o1,o2,index)
+        # this finds all valid paths of that length between the two
+        paths = [p for p in all_paths(G,o1,o2,index,l) if len(p) in ring_sizes]
+        traj+=[paths_to_atoms(large_atoms,paths)]
+        tmp_paths = []
+        for p in paths:
+            temp = []
+            for x in p:
+                temp.append(large_atoms[x].tag)
+            tmp_paths.append(temp)
+        vertex_symbols['{0}:{1}'.format(i+1,v_label)] = [path for path in tmp_paths]
+
+    return vertex_symbols, traj

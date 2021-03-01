@@ -1,5 +1,6 @@
 __all__ = ['atoms_to_graph','get_paths','remove_non_rings','paths_to_atoms',
-           'remove_dups','remove_labeled_dups','dict_to_atoms']
+           'remove_dups','remove_labeled_dups','dict_to_atoms','get_vertices',
+           'shortest_valid_path','is_valid','all_paths']
 
 '''
 This module contains utilities to be used by the rings.py module.
@@ -294,3 +295,54 @@ def dict_to_atoms(index_paths,atoms):
         trajectories[length]=tmp_traj
 
     return trajectories
+
+def get_vertices(G,index):
+    import networkx as nx
+    vertices = []
+    neighbors = [n for n in nx.neighbors(G,index)]
+    l = len(neighbors)
+    for j in range(l-1):
+        for k in range(j+1,l):
+            vertices.append([neighbors[j],neighbors[k]])
+    return vertices
+
+def shortest_valid_path(G,o1,o2,index):
+    import networkx as nx
+    G2 = G.copy()
+    G2.remove_node(index)
+    flag = True
+    while flag:
+        path = nx.shortest_path(G2,o1,o2)
+        path.append(index)
+        l = len(path)
+        flag = False
+        flag, j = is_valid(G,path)
+        if flag:
+            G2.remove_node(path[j])
+    return path,l
+
+def is_valid(G,path):
+    import networkx as nx
+    l = len(path)
+    flag = False
+    for j in range(1,l-2,2):
+        node = path[j]
+        sp = nx.shortest_path(G,node,path[-1])
+        if len(sp) < l-j and len(sp) < j+2:
+            flag = True
+            break
+    return flag, j
+
+def all_paths(G,o1,o2,index,l):
+    import networkx as nx
+    all_paths = []
+    G2 = G.copy()
+    G2.remove_node(index)
+    paths = nx.all_simple_paths(G2,o1,o2,l)
+    for path in paths:
+        path.append(index)
+        if len(path) == l:
+            flag,j = is_valid(G,path)
+            if not flag and path not in all_paths:
+                all_paths.append(path)
+    return all_paths
