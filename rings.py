@@ -223,7 +223,7 @@ def get_vertex_symbols(code,index):
         # this finds the shortest path between the two
         path, l = shortest_valid_path(G,o1,o2,index)
         # this finds all valid paths of that length between the two
-        paths = [p for p in all_paths(G,o1,o2,index,l) if len(p) in ring_sizes]
+        paths = [p for p in all_paths(G,o1,o2,index,l)]
         traj+=[paths_to_atoms(large_atoms,paths)]
         tmp_paths = []
         for p in paths:
