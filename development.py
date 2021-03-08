@@ -113,7 +113,7 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
                                 Cutoff input is required for this method
                 sp:             Custum shortest path method, not very reliable
     cutoff:     (float) Value required for the sphere validation method
-    
+
     OUTPUTS:
     ring_list:      (list) The size of rings associated with the oxygen.
     paths:      (2d array) The actual atom indices that compose found rings.
@@ -143,22 +143,26 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     # now we want to remove all the non ring paths, the method for determining
     # valid rings is designated with the validation input variable.
     if validation == 'sp':
-        paths = sp(G,paths)
+        valid_paths = sp(G,paths)
     if validation == 'd2':
-        paths = sastre(G,paths)
+        valid_paths = d2(G,paths)
     if validation =='sphere':
         if cutoff == None:
             print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
             return
-        paths = sphere(large_atoms,paths,cutoff)
+        valid_paths = sphere(large_atoms,paths,cutoff)
     if validation == 'cross_distance':
-        paths = cross_distance(large_atoms,paths)
+        valid_paths = cross_distance(large_atoms,paths)
+
+    # we want to know which rings are valid and invalid to design a neural net
+    invalid_paths = [p for p in paths if p not in valid_paths]
+
 
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
     ring_list = [int(len(p)/2) for p in paths]
-    paths2 = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
-    tmp_paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
+    paths2 = [x for _,x in sorted(zip(ring_list,valid_paths),reverse=True)]
+    tmp_paths = [x for _,x in sorted(zip(ring_list,valid_paths),reverse=True)]
     paths = []
     for p in tmp_paths:
         temp = []
@@ -167,9 +171,21 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
         paths.append(temp)
     ring_list.sort(reverse=True)
 
-    ring_atoms = paths_to_atoms(large_atoms,paths2)
+    valid_ring_atoms = [paths_to_atoms(large_atoms,[path]) for path in paths2]
 
-    return ring_list, paths, ring_atoms
+    paths2 = [x for _,x in sorted(zip(ring_list,invalid_paths),reverse=True)]
+    tmp_paths = [x for _,x in sorted(zip(ring_list,invalid_paths),reverse=True)]
+    invalid_paths = []
+    for p in tmp_paths:
+        temp = []
+        for i in p:
+            temp.append(large_atoms[i].tag)
+        paths.append(temp)
+
+    invalid_ring_atoms = [paths_to_atoms(large_atoms,[path]) for path in paths2]
+
+
+    return valid_paths, invalid_paths, valid_ring_atoms, invalid_ring_atoms
 
 # get_fwrings
 def get_fwrings(code):
