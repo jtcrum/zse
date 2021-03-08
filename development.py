@@ -66,7 +66,7 @@ def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     if validation == 'sp':
         paths = sp(G,paths)
     if validation == 'd2':
-        paths = sastre(G,paths)
+        paths = d2(G,paths)
     if validation =='sphere':
         if cutoff == None:
             print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
