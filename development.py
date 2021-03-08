@@ -66,7 +66,7 @@ def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     if validation == 'sp':
         paths = sp(G,paths)
     if validation == 'd2':
-        paths = sastre(G,paths)
+        paths = d2(G,paths)
     if validation =='sphere':
         if cutoff == None:
             print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
@@ -113,7 +113,7 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
                                 Cutoff input is required for this method
                 sp:             Custum shortest path method, not very reliable
     cutoff:     (float) Value required for the sphere validation method
-    
+
     OUTPUTS:
     ring_list:      (list) The size of rings associated with the oxygen.
     paths:      (2d array) The actual atom indices that compose found rings.
@@ -145,7 +145,7 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     if validation == 'sp':
         paths = sp(G,paths)
     if validation == 'd2':
-        paths = sastre(G,paths)
+        paths = d2(G,paths)
     if validation =='sphere':
         if cutoff == None:
             print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
