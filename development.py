@@ -163,12 +163,12 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     ring_list = [int(len(p)/2) for p in paths]
     paths2 = [x for _,x in sorted(zip(ring_list,valid_paths),reverse=True)]
     tmp_paths = [x for _,x in sorted(zip(ring_list,valid_paths),reverse=True)]
-    paths = []
+    valid_paths = []
     for p in tmp_paths:
         temp = []
         for i in p:
             temp.append(large_atoms[i].tag)
-        paths.append(temp)
+        valid_paths.append(temp)
     ring_list.sort(reverse=True)
 
     valid_ring_atoms = [paths_to_atoms(large_atoms,[path]) for path in paths2]
@@ -180,7 +180,7 @@ def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
         temp = []
         for i in p:
             temp.append(large_atoms[i].tag)
-        paths.append(temp)
+        invalid_paths.append(temp)
 
     invalid_ring_atoms = [paths_to_atoms(large_atoms,[path]) for path in paths2]
 
