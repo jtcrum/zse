@@ -51,7 +51,7 @@ def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
 
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph
-    G, large_atoms, repeat = atoms_to_graph2(atoms,index,max_ring)
+    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
     index = [atom.index for atom in large_atoms if atom.tag==index][0]
 
 
