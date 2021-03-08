@@ -10,7 +10,7 @@ import numpy as np
 import math
 from zse.utilities import *
 
-def atoms_to_graph(atoms,index,max_ring,scale = True):
+def atoms_to_graph(atoms,index,max_ring):
     '''
     Helper function to repeat a unit cell enough times to capture the largest
     possible ring, and turn the new larger cell into a graph object.
@@ -20,10 +20,6 @@ def atoms_to_graph(atoms,index,max_ring,scale = True):
     large_atoms = ASE atoms object of the new larger cell framework
     repeat = array showing the number of times the cell was repeated: [x,y,z]
     '''
-
-    # first scale the unit cell so the average Si-Si distance = 3.1 Å
-    if scale:
-        atoms = scale_cell(atoms)
 
     # repeat cell, center the cell, and wrap the atoms back into the cell
     cell = atoms.cell.cellpar()[:3]

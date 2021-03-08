@@ -13,10 +13,11 @@ __all__ = ['get_orings','get_trings','get_fwrings','get_vertex_symbols']
 from zse.collections import get_ring_sizes, framework
 from zse.ring_utilities import *
 from zse.utilities import *
+from zse.ring_validation import *
 
 # get_orings
 
-def get_orings(atoms,index,code):
+def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     '''
     Function to find all the rings asssociated with an oxygen atom in a zeolite
     framework.
@@ -26,6 +27,16 @@ def get_orings(atoms,index,code):
                 works best if you remove any adsorbates first
     index:      (integer) index of the atom that you want to classify
     code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
+    validation: (str) Method in which to determin valid rings.
+                cross_distance: uses cross ring Si-Si distances
+                d2:             ensures each ring can't be decomposed into two
+                                smaller rings
+                sphere:         Checks that no non ring atoms are within some
+                                cutoff radius of the center of mass of the
+                                ring.
+                                Cutoff input is required for this method
+                sp:             Custum shortest path method, not very reliable
+    cutoff:     (float) Value required for the sphere validation method
 
     OUTPUTS:
     ring_list:      (list) The size of rings associated with the oxygen.
@@ -45,14 +56,26 @@ def get_orings(atoms,index,code):
     # get the closest neighbor of the oxygen, and find all possible rings
     # between that oxygen and its neighbor
     paths = get_paths(G,index,ring_sizes)
+    paths = remove_dups(paths)
 
     # now we want to remove all the non ring paths
-    paths = remove_non_rings(large_atoms, paths)
+    # the validation method will determine which set of rules to use
+    # to eliminate non ring paths
+    if validation == 'sp':
+        paths = sp(G,paths)
+    if validation == 'd2':
+        paths = sastre(G,paths)
+    if validation =='sphere':
+        if cutoff == None:
+            print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
+            return
+        paths = sphere(large_atoms,paths,cutoff)
+    if validation == 'cross_distance':
+        paths = cross_distance(large_atoms,paths)
 
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
     ring_list = [int(len(p)/2) for p in paths]
-    paths2 = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
     tmp_paths = [x for _,x in sorted(zip(ring_list,paths),reverse=True)]
     paths = []
     for p in tmp_paths:
@@ -63,12 +86,12 @@ def get_orings(atoms,index,code):
 
     ring_list.sort(reverse=True)
 
-    ring_atoms = paths_to_atoms(large_atoms,paths2)
+    ring_atoms = paths_to_atoms(large_atoms,tmp_paths)
 
     return ring_list, paths, ring_atoms
 
 # get_trings
-def get_trings(atoms,index,code):
+def get_trings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     '''
     Function to find all the rings asssociated with a T-site in a zeolite
     framework.
@@ -78,6 +101,16 @@ def get_trings(atoms,index,code):
                 works best if you remove any adsorbates first
     index:      (integer) index of the atom that you want to classify
     code:       (str) IZA code for the zeolite you are using (i.e. 'CHA')
+    validation: (str) Method in which to determin valid rings.
+                cross_distance: uses cross ring Si-Si distances
+                d2:             ensures each ring can't be decomposed into two
+                                smaller rings
+                sphere:         Checks that no non ring atoms are within some
+                                cutoff radius of the center of mass of the
+                                ring.
+                                Cutoff input is required for this method
+                sp:             Custum shortest path method, not very reliable
+    cutoff:     (float) Value required for the sphere validation method
 
     OUTPUTS:
     ring_list:      (list) The size of rings associated with the oxygen.
@@ -101,8 +134,23 @@ def get_trings(atoms,index,code):
     for n in nx.neighbors(G,index):
         paths = paths+get_paths(G,n,ring_sizes)
 
-    # now we want to remove all the non ring paths
-    paths = remove_non_rings(large_atoms, paths)
+    # Since we found the rings for each oxygen attached to the T-site,
+    # there will be duplicate rings. Let's remove those.
+    paths = remove_dups(paths)
+
+    # now we want to remove all the non ring paths, the method for determining
+    # valid rings is designated with the validation input variable.
+    if validation == 'sp':
+        paths = sp(G,paths)
+    if validation == 'd2':
+        paths = sastre(G,paths)
+    if validation =='sphere':
+        if cutoff == None:
+            print('INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set.')
+            return
+        paths = sphere(large_atoms,paths,cutoff)
+    if validation == 'cross_distance':
+        paths = cross_distance(large_atoms,paths)
 
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
@@ -122,7 +170,7 @@ def get_trings(atoms,index,code):
     return ring_list, paths, ring_atoms
 
 # get_fwrings
-def get_fwrings(code):
+def get_fwrings(code,validation='cross_distance',cutoff=3.15):
     '''
     Function to find all the unique rings in a zeolite framework.
 
@@ -146,7 +194,7 @@ def get_fwrings(code):
     # this in theory should find us every possible type of ring in the fw
     paths = []
     for o in oinds:
-        paths += get_orings(atoms,o,code)[1]
+        paths += get_orings(atoms,o,code, validation = validation, cutoff = cutoff)[1]
     paths = remove_dups(paths)
 
     # now we want to get the t-site and o-site labels
