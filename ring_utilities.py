@@ -20,7 +20,7 @@ def atoms_to_graph(atoms,index,max_ring):
     large_atoms = ASE atoms object of the new larger cell framework
     repeat = array showing the number of times the cell was repeated: [x,y,z]
     '''
-
+    
     # repeat cell, center the cell, and wrap the atoms back into the cell
     cell = atoms.cell.cellpar()[:3]
     repeat = []
@@ -59,13 +59,23 @@ def atoms_to_graph(atoms,index,max_ring):
     atoms = large_atoms.copy()
     del large_atoms[delete]
 
-    # we need a neighborlist (connectivity matrix) before we can make our graph
-    from ase import neighborlist
-    cutoff = neighborlist.natural_cutoffs(large_atoms, mult = 1.05)
-    nl = neighborlist.NeighborList(cutoffs = cutoff, self_interaction=False, bothways = True)
-    nl.update(large_atoms)
-    matrix = nl.get_connectivity_matrix(sparse=False)
+    matrix = np.zeros([len(large_atoms),len(large_atoms)]).astype(int)
+    positions = large_atoms.get_positions()
 
+
+
+    tsites = [atom.index for atom in large_atoms if atom.symbol != 'O']
+    tpositions = positions[tsites]
+    osites = [atom.index for atom in large_atoms if atom.index not in tsites]
+    opositions = positions[osites]
+    distances = get_distances(tpositions,opositions)[1]
+
+    for i,t in enumerate(tsites):
+        dists = distances[i]
+        idx = np.nonzero(dists<2)[0]
+        for o in idx:
+            matrix[t,osites[o]]=1
+            matrix[osites[o],t]=1
     # now we make the graph
     import networkx as nx
     G = nx.from_numpy_matrix(matrix)
