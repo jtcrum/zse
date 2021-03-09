@@ -125,7 +125,7 @@ def d2(G,paths):
     Method for determinging valid rings presented by Goetzke, K.; Klein, H.-J.
     (DOI: 10.1016/0022-3093(91)90145-V) and implemented by
     Sastre, G; Corma, A. (DOI: 10.1021/jp8100128)
-    A valid ring is a path that cannote be decomposed into two smaller rings.
+    A valid ring is a path that cannot be decomposed into two smaller rings.
     Results found with this method match results from the Sastre & Corma paper.
     '''
     import networkx as nx
