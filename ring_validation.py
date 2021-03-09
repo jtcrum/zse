@@ -45,35 +45,6 @@ def sp(G,paths):
 
     return valid_paths
 
-def sastre_old(G,paths):
-    '''
-    THIS WAS WRONG, USE THE NEW SASTRE INSTEAD.
-    Method for determinging valid rings presented by Goetzke, K.; Klein, H.-J.
-    (DOI: 10.1016/0022-3093(91)90145-V) and implemented by
-    Sastre, G; Corma, A. (DOI: 10.1021/jp8100128)
-    Results found with this method match results from the Sastre & Corma paper.
-    '''
-    import networkx as nx
-    valid_paths = []
-    for p in paths:
-        l = len(p)
-        flag = True
-        for j in range(1,l-3,2):
-            for k in range(j+4,l,2):
-                shortest_path = nx.shortest_path(G,p[j],p[k])
-                for r in shortest_path:
-                    if r not in p:
-                        lengths = [k-j+1,l-k+j+1]
-                        if len(shortest_path)<min(lengths):
-                            flag = False
-                            break
-            # if not flag:
-            #     break
-        if flag:
-            valid_paths.append(p)
-
-    return valid_paths
-
 def sphere(atoms,paths,cutoff):
     '''
     Method for determining valid rings by ensuring that non ring atoms are not

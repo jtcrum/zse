@@ -20,7 +20,7 @@ def atoms_to_graph(atoms,index,max_ring):
     large_atoms = ASE atoms object of the new larger cell framework
     repeat = array showing the number of times the cell was repeated: [x,y,z]
     '''
-    
+
     # repeat cell, center the cell, and wrap the atoms back into the cell
     cell = atoms.cell.cellpar()[:3]
     repeat = []
@@ -249,7 +249,7 @@ def paths_to_atoms(atoms,paths):
 
     return tmp_atoms
 
-def remove_labeled_dups(index_paths,label_paths,ring_sizes):
+def remove_labeled_dups(index_paths,label_paths,ring_sizes,atoms):
 
     # first make dictionaries
     label_rings = {}
@@ -274,7 +274,27 @@ def remove_labeled_dups(index_paths,label_paths,ring_sizes):
                 st2 = ' '.join(map(str,ring_tlist[j]))
                 st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
                 if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
-                    d.append(int(j))
+                    p = ring_full[i]
+                    atoms, trans = center(atoms,p[0])
+                    cross1 = []
+                    for x in range(1,len(p)+1,2):
+                        for r in range(x+2,len(p)+1,2):
+                            dist = round(atoms.get_distance(p[x],p[r]),1)
+                            cross1.append(dist)
+                    cross1.sort()
+
+
+                    p = ring_full[j]
+                    atoms, trans = center(atoms,p[0])
+                    cross2 = []
+                    for x in range(1,len(p)+1,2):
+                        for r in range(x+2,len(p)+1,2):
+                            dist = round(atoms.get_distance(p[x],p[r]),1)
+                            cross2.append(dist)
+                    cross2.sort()
+
+                    if cross1 == cross2:
+                        d.append(int(j))
         tmp1 = []
         tmp2 = []
         for i in range(len(ring_tlist)):

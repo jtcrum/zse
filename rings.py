@@ -213,7 +213,8 @@ def get_fwrings(code,validation='cross_distance',cutoff=3.15):
 
     # now we want to remove duplicate rings based on the label_paths
     # this will also give us the paths in a conveinent dictionary
-    index_paths, label_paths = remove_labeled_dups(index_paths, label_paths, ring_sizes)
+    # we will check the labels and geometry to remove duplicates
+    index_paths, label_paths = remove_labeled_dups(index_paths, label_paths, ring_sizes,atoms)
 
     # last but not least, let's make an atoms object for each ring type so that
     # we can visualize them later
