@@ -1,4 +1,10 @@
 __all__ = ['sp','d2','sphere','cross_distance']
+
+'''
+This module contains all the various ring validation techniques implemented by
+ZSE. This is a work in progress, and more methods will be added.
+'''
+
 from zse.ring_utilities import *
 
 def sp(G,paths):
