@@ -6,6 +6,7 @@ ZSE. This is a work in progress, and more methods will be added.
 '''
 
 from zse.ring_utilities import *
+from zse.utilities import *
 
 def sp(G,paths):
     '''
@@ -83,6 +84,8 @@ def cross_distance(atoms, paths):
     This method is biased by human interpretation of what constitutes a ring.
     '''
     import math
+
+    atoms = scale_cell(atoms)
 
     delete = []
     for j,r in enumerate(paths):
