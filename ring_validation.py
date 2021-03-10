@@ -157,7 +157,7 @@ def d2(G,paths):
                             FLAG = True
                         if len(con1) == l:
                             FLAG,q = is_valid(G,con1)
-                    if l2 < l2:
+                    if l2 < l1:
                         G2 = G.copy()
                         for x in p2[1:-1]:
                             G2.remove_node(x)
@@ -167,6 +167,11 @@ def d2(G,paths):
                             FLAG = True
                         if len(con1) == l:
                             FLAG,q = is_valid(G,con1)
+                    if l1 == l2:
+                        G2 = G.copy()
+                        sp = nx.shortest_path(G2,p1[0],p1[-1])
+                        if len(sp) < l1:
+                            FLAG = True
                     if FLAG:
                         break
                 if FLAG:
