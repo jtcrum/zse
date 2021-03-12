@@ -12,45 +12,47 @@ def tsub(atoms,index,new_atom):
     index is the index of the atom(s) you would like to substitute
     new_atom is the elemental symbol of the atom you want to replace index with.
     '''
-
-    symbols = atoms.get_chemical_symbols()
+    z = atoms.copy()
+    symbols = z.get_chemical_symbols()
     if isinstance(index, int):
         index = [index]
     for i in index:
         symbols[i]=new_atom
 
-    atoms.set_chemical_symbols(symbols)
+    z.set_chemical_symbols(symbols)
 
-    return atoms
+    return z
 
 def nest(atoms,index):
 
-    position = atoms[index].position # position of that t site
+    z = atoms.copy()
+
+    position = z[index].position # position of that t site
 
     # This centers the atom object on the T site we want to remove
-    center = atoms.get_center_of_mass()
+    center = z.get_center_of_mass()
     trans = center-position
-    atoms.translate(trans)
-    atoms.wrap()
+    z.translate(trans)
+    z.wrap()
 
     # get the neighbor list
-    cutoff = neighborlist.natural_cutoffs(atoms,mult=1.05)
+    cutoff = neighborlist.natural_cutoffs(z,mult=1.05)
     nl = neighborlist.NeighborList(cutoffs=cutoff, self_interaction = False, bothways = True)
-    nl.update(atoms)
+    nl.update(z)
     oxygens = nl.get_neighbors(index)[0]
 
     # add a hydrogen next to each neighbor oxygen
 
     for o in oxygens:
-        vector = position - atoms[o].position
+        vector = position - z[o].position
         hyd = molecule('H')
-        new_location = atoms[o].position + vector / (vector**2).sum()**.5
+        new_location = z[o].position + vector / (vector**2).sum()**.5
         hyd.translate(new_location)
-        atoms = atoms + hyd
+        z = z + hyd
 
 
     # recenter the atoms back to their original position and delete the Si
-    atoms.translate(-trans)
-    atoms.wrap()
-    del(atoms[index])
-    return atoms
+    z.translate(-trans)
+    z.wrap()
+    del(z[index])
+    return z
