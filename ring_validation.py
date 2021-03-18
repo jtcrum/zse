@@ -1,4 +1,4 @@
-__all__ = ['sp','d2','sphere','cross_distance']
+__all__ = ['sp','d2','sphere','cross_distance','goetzke']
 
 '''
 This module contains all the various ring validation techniques implemented by
@@ -7,6 +7,7 @@ ZSE. This is a work in progress, and more methods will be added.
 
 from zse.ring_utilities import *
 from zse.utilities import *
+import numpy as np
 
 def sp(G,paths):
     '''
@@ -182,3 +183,84 @@ def d2(G,paths):
         if not FLAG:
             valid_paths.append(path)
     return valid_paths
+
+def goetzke(G,index,cutoff):
+    import networkx as nx
+
+    sp = dict(nx.all_pairs_shortest_path_length(G))
+    paths = []
+    for size in np.arange(6,cutoff+1,2):
+        for i in sp[index]:
+            x = sp[index][i]
+            if x == (size/2):
+                path = make_path(sp,index,i,size)
+                if path:
+                    paths += path
+    return paths
+
+def get_left(cl,s1,count,sp):
+    left_options = []
+    for j1 in sp[cl]:
+        q = sp[cl][j1]
+        if q == 1 and sp[j1][s1] == count:
+            left_options.append(j1)
+    return left_options
+
+def get_right(cr,s2,lo,count,size,sp):
+    right_options = []
+    for l in lo:
+        temp = []
+        flag = False
+        for j2 in sp[cr]:
+            q = sp[cr][j2]
+            if q == 1 and sp[j2][s2] == count and sp[l][j2] == size/2:
+                temp.append(j2)
+                flag = True
+        if flag:
+            right_options.append(temp)
+        else:
+            right_options.append('x')
+    return right_options
+
+def make_path(sp,s1,s2,size):
+    count = size/2-1
+    left_overall = [[s2]]
+    right_overall = [[s1]]
+    while count > 0:
+        left_temp = []
+        right_temp = []
+        for left,right in zip(left_overall, right_overall):
+            cl = left[-1]
+            cr = right[-1]
+            left_options = get_left(cl,s1,count,sp)
+            right_options = get_right(cr,s2,left_options,count,size,sp)
+
+            for l,ro in zip(left_options, right_options):
+                for r in ro:
+                    if r != 'x':
+                        left_temp.append(left+[l])
+                        right_temp.append(right+[r])
+        left_overall = []
+        right_overall = []
+        for l,r in zip(left_temp,right_temp):
+            l1 = l[-1]
+            r1 = r[-1]
+            flag = True
+
+            for l2,r2 in zip(left_overall,right_overall):
+                if size/2 % 2 == 0:
+                    if l1 == r2[-1] and r1 == l2[-1]:
+                        flag = False
+                else:
+                    if l1 == r2[-2] and r1 == l2[-2]:
+                        flag = False
+            if flag:
+                left_overall.append(l)
+                right_overall.append(r)
+        count -= 1
+    paths = []
+    for l,r in zip(left_overall,right_overall):
+        path = r+l
+        if len(path) == size:
+            paths.append(path)
+    return paths

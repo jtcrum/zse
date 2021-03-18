@@ -19,7 +19,7 @@ from zse.ring_validation import *
 
 # get_orings
 
-def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
+def get_orings(atoms,index,max_ring=12,validation='goetzke',cutoff=3.15):
     '''
     Function to find all the rings asssociated with an oxygen atom in a zeolite
     framework.
@@ -46,19 +46,22 @@ def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     ring_atoms: (ASE atoms object) all the rings found
     '''
     # get possible rings, and max ring size
-    ring_sizes = get_ring_sizes(code)*2
+    ring_sizes = np.arange(3,max_ring+1)*2
     max_ring = max(ring_sizes)
 
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph
-    G, large_atoms, repeat = atoms_to_graph2(atoms,index,max_ring)
+    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
     index = [atom.index for atom in large_atoms if atom.tag==index][0]
 
 
     # get the closest neighbor of the oxygen, and find all possible rings
     # between that oxygen and its neighbor
-    paths = get_paths(G,index,ring_sizes)
-    paths = remove_dups(paths)
+    if validation == 'goetzke':
+        paths = goetzke(G,index,max_ring)
+    else:
+        paths = get_paths(G,index,ring_sizes)
+        paths = remove_dups(paths)
 
     # now we want to remove all the non ring paths
     # the validation method will determine which set of rules to use
@@ -224,82 +227,6 @@ def get_fwrings(code):
 
     return index_paths, label_paths, trajectories
 
-def atoms_to_graph2(atoms,index,max_ring,scale = True):
-    '''
-    Helper function to repeat a unit cell enough times to capture the largest
-    possible ring, and turn the new larger cell into a graph object.
-
-    RETURNS:
-    G = graph object representing zeolite framework in new larger cell
-    large_atoms = ASE atoms object of the new larger cell framework
-    repeat = array showing the number of times the cell was repeated: [x,y,z]
-    '''
-
-    # first scale the unit cell so the average Si-Si distance = 3.1 Å
-    if scale:
-        atoms = scale_cell(atoms)
-
-
-    # repeat cell, center the cell, and wrap the atoms back into the cell
-    cell = atoms.cell.cellpar()[:3]
-    repeat = []
-    for i,c in enumerate(cell):
-        if c/2 < max_ring/2+5:
-            l = c
-            re = 1
-            while l/2 < max_ring/2+5:
-                re += 1
-                l = c*re
-
-            repeat.append(re)
-        else:
-            repeat.append(1)
-    large_atoms = atoms.copy()
-    large_atoms = large_atoms.repeat(repeat)
-    center = large_atoms.get_center_of_mass()
-    trans = center - large_atoms.positions[index]
-    large_atoms.translate(trans)
-    large_atoms.wrap()
-
-    # remove atoms that won't contribute to wrings
-    from ase.geometry import get_distances
-    cell = large_atoms.get_cell()
-    pbc = [1,1,1]
-    p1 = large_atoms[index].position
-    positions = large_atoms.get_positions()
-    distances = get_distances(p1,positions)[1][0]
-
-    delete = []
-    for i,l in enumerate(distances):
-        if l>max_ring/2+5:
-            delete.append(i)
-    inds = [atom.index for atom in large_atoms]
-    large_atoms.set_tags(inds)
-    atoms = large_atoms.copy()
-    del large_atoms[delete]
-
-    matrix = np.zeros([len(large_atoms),len(large_atoms)]).astype(int)
-    positions = large_atoms.get_positions()
-
-
-
-    tsites = [atom.index for atom in large_atoms if atom.symbol != 'O']
-    tpositions = positions[tsites]
-    osites = [atom.index for atom in large_atoms if atom.index not in tsites]
-    opositions = positions[osites]
-    distances = get_distances(tpositions,opositions)[1]
-
-    for i,t in enumerate(tsites):
-        dists = distances[i]
-        idx = np.nonzero(dists<2)[0]
-        for o in idx:
-            matrix[t,osites[o]]=1
-            matrix[osites[o],t]=1
-    # now we make the graph
-    import networkx as nx
-    G = nx.from_numpy_matrix(matrix)
-    # G.remove_nodes_from(delete)
-    return G, large_atoms, repeat
 
 def get_geometry(atoms,index,code):
     from ase.geometry import get_distances
