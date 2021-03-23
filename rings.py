@@ -284,7 +284,7 @@ def get_vertex_symbols(code,index):
 
     return vertex_symbols, traj
 
-def get_rings(atoms,index,validation ='goetzke',max_ring = 12):
+def get_rings(atoms,index,validation=None,max_ring = 12):
     '''
     Function to find all the rings asssociated with an O-site or T-site in a
     zeolite framework.
@@ -316,10 +316,14 @@ def get_rings(atoms,index,validation ='goetzke',max_ring = 12):
     # also turn this new larger unit cell into a graph
     G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
     index = [atom.index for atom in large_atoms if atom.tag==index][0]
+    index_symbol = large_atoms[index].symbol
 
-    # find rings based on the set of rules you want to use
-    if validation == 'goetzke':
-        paths = goetzke(G,index,max_ring)
+    # find cycles that don't contain any shortcuts
+    paths = goetzke(G,index,max_ring)
+
+    # remove some cycles based on other validation rules
+    if validation == 'crum':
+        paths = crum(G,paths,index_symbol)
 
     # convert the indices of the paths back to standard cell indices
     ring_list = [int(len(p)/2) for p in paths]

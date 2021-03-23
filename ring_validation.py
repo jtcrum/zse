@@ -1,4 +1,4 @@
-__all__ = ['sp','d2','sphere','cross_distance','goetzke']
+__all__ = ['sp','crum','sphere','cross_distance','goetzke']
 
 '''
 This module contains all the various ring validation techniques implemented by
@@ -130,7 +130,7 @@ def cross_distance(atoms, paths):
 
     return paths
 
-def d2(G,paths):
+def crum(G,paths,index_symbol):
     '''
     Method for determinging valid rings presented by Goetzke, K.; Klein, H.-J.
     (DOI: 10.1016/0022-3093(91)90145-V) and implemented by
@@ -139,14 +139,20 @@ def d2(G,paths):
     Results found with this method match results from the Sastre & Corma paper.
     '''
     import networkx as nx
+
+    if index_symbol == 'O':
+        start = 1
+    else:
+        start = 0
+    lengths = [len(p) for p in paths]
     valid_paths = []
     for path in paths:
         FLAG = False
         path2 = path + path
         l = len(path)
-        if l > 8:
-            for j in range(1,l,2):
-                for k in range(j+4,int(l/2)+j+1,2):
+        if l > 8 and l-4 in lengths and (l/2) %2 ==0:
+            for j in range(start,int(l/2)-1,2):
+                for k in [int(j+l/2-2)]:
                     p1 = path2[j:k+1]
                     p2 = path2[k:l+j+1]
                     l1 = len(p1)
