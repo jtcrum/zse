@@ -187,7 +187,7 @@ def d2(G,paths):
 def goetzke(G,index,cutoff):
     import networkx as nx
 
-    sp = dict(nx.all_pairs_shortest_path_length(G))
+    sp = dict(nx.all_pairs_shortest_path_length(G,cutoff/2))
     paths = []
     for size in np.arange(6,cutoff+1,2):
         for i in sp[index]:
@@ -202,8 +202,11 @@ def get_left(cl,s1,count,sp):
     left_options = []
     for j1 in sp[cl]:
         q = sp[cl][j1]
-        if q == 1 and sp[j1][s1] == count:
-            left_options.append(j1)
+        try:
+            if q == 1 and sp[j1][s1] == count:
+                left_options.append(j1)
+        except:
+            pass
     return left_options
 
 def get_right(cr,s2,lo,count,size,sp):
@@ -212,10 +215,13 @@ def get_right(cr,s2,lo,count,size,sp):
         temp = []
         flag = False
         for j2 in sp[cr]:
-            q = sp[cr][j2]
-            if q == 1 and sp[j2][s2] == count and sp[l][j2] == size/2:
-                temp.append(j2)
-                flag = True
+            try:
+                q = sp[cr][j2]
+                if q == 1 and sp[j2][s2] == count and sp[l][j2] == size/2:
+                    temp.append(j2)
+                    flag = True
+            except:
+                pass
         if flag:
             right_options.append(temp)
         else:
