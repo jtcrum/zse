@@ -1,4 +1,4 @@
-__all__ = ['sp','crum','sphere','cross_distance','goetzke']
+__all__ = ['sp','sastre','crum','sphere','cross_distance','goetzke']
 
 '''
 This module contains all the various ring validation techniques implemented by
@@ -130,67 +130,14 @@ def cross_distance(atoms, paths):
 
     return paths
 
-def crum(G,paths,index_symbol):
-    '''
-    Method for determinging valid rings presented by Goetzke, K.; Klein, H.-J.
-    (DOI: 10.1016/0022-3093(91)90145-V) and implemented by
-    Sastre, G; Corma, A. (DOI: 10.1021/jp8100128)
-    A valid ring is a path that cannot be decomposed into two smaller rings.
-    Results found with this method match results from the Sastre & Corma paper.
-    '''
-    import networkx as nx
-
-    if index_symbol == 'O':
-        start = 1
-    else:
-        start = 0
-    lengths = [len(p) for p in paths]
-    valid_paths = []
-    for path in paths:
-        FLAG = False
-        path2 = path + path
-        l = len(path)
-        if l > 8 and l-4 in lengths and (l/2) %2 ==0:
-            for j in range(start,int(l/2)-1,2):
-                for k in [int(j+l/2-2)]:
-                    p1 = path2[j:k+1]
-                    p2 = path2[k:l+j+1]
-                    l1 = len(p1)
-                    l2 = len(p2)
-                    if l1 < l2:
-                        G2 = G.copy()
-                        for x in p1[1:-1]:
-                            G2.remove_node(x)
-                        sp = nx.shortest_path(G2,p1[0],p1[-1])
-                        con1 = p2 + sp[1:-1]
-                        if len(con1) < l:
-                            FLAG = True
-                        if len(con1) == l:
-                            FLAG,q = is_valid(G,con1)
-                    if l2 < l1:
-                        G2 = G.copy()
-                        for x in p2[1:-1]:
-                            G2.remove_node(x)
-                        sp = nx.shortest_path(G2,p2[0],p2[-1])
-                        con1 = p1 + sp[1:-1]
-                        if len(con1) < l:
-                            FLAG = True
-                        if len(con1) == l:
-                            FLAG,q = is_valid(G,con1)
-                    if l1 == l2:
-                        G2 = G.copy()
-                        sp = nx.shortest_path(G2,p1[0],p1[-1])
-                        if len(sp) < l1:
-                            FLAG = True
-                    if FLAG:
-                        break
-                if FLAG:
-                    break
-        if not FLAG:
-            valid_paths.append(path)
-    return valid_paths
-
 def goetzke(G,index,cutoff):
+    '''
+    Method to find all cycles that cannot be decomposed into smaller cycles
+    via shortcuts. This rule and algorithm was presented by:
+    K. Goetzke and H.-J. Klein (https://doi.org/10.1016/0022-3093(91)90145-V)
+    Slight modifications to the algorithm have been implemented to take
+    advantage of symmetry.
+    '''
     import networkx as nx
 
     sp = dict(nx.all_pairs_shortest_path_length(G,cutoff/2))
@@ -276,3 +223,91 @@ def make_path(sp,s1,s2,size):
         if len(path) == size:
             paths.append(path)
     return paths
+
+def sastre(G,paths,index_symbol):
+    '''
+    This method returns only the shortest paths rings based on the rule
+    presented by Sastre and Corma.
+    Sastre, G; Corma, A. (DOI: 10.1021/jp8100128)
+    A valid ring is a cycle that cannot be decomposed into smaller rings, and
+    is considered a vertex symbol ring for at least one pair of nearest
+    neighbor oxygens in the cycle.
+    Results found with this method match results from the Sastre & Corma paper.
+
+    '''
+    import networkx as nx
+
+    if index_symbol == 'O':
+        start = 0
+    else:
+        start = 1
+    valid_paths = []
+    for p in paths:
+        p2=p+p[:4]
+        l = len(p)
+        for j in range(start,len(p2)-2,2):
+            flag = False
+            path, length = shortest_valid_path(G,p2[j],p2[j+2],p2[j+1])
+            if length == l:
+                flag = True
+                break
+        if flag:
+            valid_paths.append(p)
+    return valid_paths
+
+def crum(G,paths,index_symbol):
+    '''
+    Method to remove composite stacked rings (i.e. 8-MRs in the CHA D6R) or
+    14-MRs in the AFI framework.
+    '''
+    import networkx as nx
+
+    if index_symbol == 'O':
+        start = 1
+    else:
+        start = 0
+    lengths = [len(p) for p in paths]
+    valid_paths = []
+    for path in paths:
+        FLAG = False
+        path2 = path + path
+        l = len(path)
+        if l > 8 and l-4 in lengths and (l/2) %2 ==0:
+            for j in range(start,int(l/2)-1,2):
+                for k in [int(j+l/2-2)]:
+                    p1 = path2[j:k+1]
+                    p2 = path2[k:l+j+1]
+                    l1 = len(p1)
+                    l2 = len(p2)
+                    if l1 < l2:
+                        G2 = G.copy()
+                        for x in p1[1:-1]:
+                            G2.remove_node(x)
+                        sp = nx.shortest_path(G2,p1[0],p1[-1])
+                        con1 = p2 + sp[1:-1]
+                        if len(con1) < l:
+                            FLAG = True
+                        if len(con1) == l:
+                            FLAG,q = is_valid(G,con1)
+                    if l2 < l1:
+                        G2 = G.copy()
+                        for x in p2[1:-1]:
+                            G2.remove_node(x)
+                        sp = nx.shortest_path(G2,p2[0],p2[-1])
+                        con1 = p1 + sp[1:-1]
+                        if len(con1) < l:
+                            FLAG = True
+                        if len(con1) == l:
+                            FLAG,q = is_valid(G,con1)
+                    if l1 == l2:
+                        G2 = G.copy()
+                        sp = nx.shortest_path(G2,p1[0],p1[-1])
+                        if len(sp) < l1:
+                            FLAG = True
+                    if FLAG:
+                        break
+                if FLAG:
+                    break
+        if not FLAG:
+            valid_paths.append(path)
+    return valid_paths

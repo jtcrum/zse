@@ -16,7 +16,6 @@ from zse.utilities import *
 from zse.ring_validation import *
 
 # get_orings
-
 def get_orings(atoms,index,code,validation='cross_distance',cutoff=3.15):
     '''
     Function to find all the rings asssociated with an oxygen atom in a zeolite
@@ -322,6 +321,8 @@ def get_rings(atoms,index,validation=None,max_ring = 12):
     paths = goetzke(G,index,max_ring)
 
     # remove some cycles based on other validation rules
+    if validation == 'sastre':
+        paths = sastre(G,paths,index_symbol)
     if validation == 'crum':
         paths = crum(G,paths,index_symbol)
 
