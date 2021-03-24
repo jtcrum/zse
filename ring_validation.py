@@ -1,4 +1,4 @@
-__all__ = ['sp','sastre','crum','sphere','cross_distance','goetzke']
+__all__ = ['sp','vertex','sastre','crum','sphere','cross_distance','goetzke']
 
 '''
 This module contains all the various ring validation techniques implemented by
@@ -7,6 +7,7 @@ ZSE. This is a work in progress, and more methods will be added.
 
 from zse.ring_utilities import *
 from zse.utilities import *
+from collections import defaultdict
 import numpy as np
 
 def sp(G,paths):
@@ -272,7 +273,7 @@ def crum(G,paths,index_symbol):
         FLAG = False
         path2 = path + path
         l = len(path)
-        if l > 8 and l-4 in lengths and (l/2) %2 ==0:
+        if l > 8 and (l/2) %2 ==0:
             for j in range(start,int(l/2)-1,2):
                 for k in [int(j+l/2-2)]:
                     p1 = path2[j:k+1]
@@ -310,4 +311,24 @@ def crum(G,paths,index_symbol):
                     break
         if not FLAG:
             valid_paths.append(path)
+    return valid_paths
+
+def vertex(paths):
+    oxygens = []
+    v_paths = defaultdict(list)
+    for p in paths:
+        oxygens.append(p[1])
+        oxygens.append(p[-1])
+        sites = [p[1],p[-1]]
+        sites.sort()
+        v_paths['{0}-{1}'.format(sites[0],sites[1])].append(p)
+    oxygens = np.unique(oxygens)
+    valid_paths = []
+    for v in sorted(v_paths):
+        paths = v_paths[v]
+        l = len(paths[0])
+        for p in paths:
+            if len(p) == l:
+                valid_paths.append(p)
+
     return valid_paths

@@ -321,6 +321,12 @@ def get_rings(atoms,index,validation=None,max_ring = 12):
     paths = goetzke(G,index,max_ring)
 
     # remove some cycles based on other validation rules
+    if validation == 'vertex':
+        if index_symbol == 'O':
+            print("WARNING: Can't find vertex symbols of oxygen atoms")
+            return False, False, False, False
+        else:
+            paths = vertex(paths)
     if validation == 'sastre':
         paths = sastre(G,paths,index_symbol)
     if validation == 'crum':
