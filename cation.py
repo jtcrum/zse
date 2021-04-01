@@ -2,6 +2,7 @@ __all__ = ['divalent','monovalent']
 
 from zse.cation_utilities import *
 from zse.ring_utilities import *
+from zse.rings import *
 from zse.utilities import *
 from ase.io import read, write
 from ase import Atoms, Atoms
@@ -62,7 +63,7 @@ def divalent(atoms,M,path = None):
                     write('{0}/D-{1}-{2}-{3}/POSCAR'.format(path,str(aluminum[l]),str(oxygens[l,j]),str(oxygens[l,i])),M_lattice, sort = True)
     return traj
 
-def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None):
+def monovalent(atoms,index,symbol,included_rings=None,path=None,bvect=None):
 
     '''
     This code has been updated to place the ion inside each of the rings
@@ -97,30 +98,17 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
 
     # get all the rings associated with the T site
     # this follows the same steps as rings.get_trings()
-    ring_sizes = get_ring_sizes(code)*2
-    max_ring = max(ring_sizes)
-    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
-    temp_index = [atom.index for atom in large_atoms if atom.tag==index][0]
-
-    import networkx as nx
-    paths = []
-    for n in nx.neighbors(G,temp_index):
-        paths = paths+get_paths(G,n,ring_sizes)
-    temp_paths = remove_non_rings(large_atoms, paths)
-
-    paths = []
-    for p in temp_paths:
-        temp = []
-        for i in p:
-            temp.append(large_atoms[i].tag)
-        paths.append(temp)
-
+    if included_rings:
+        max_ring = max(included_rings)
+    else:
+        max_ring = 12
+    c,paths,ra,large_atoms = get_rings(atoms,index,validation = 'crum',max_ring = max_ring)
     # which rings should be included
     if included_rings == None:
         included_rings = []
-        for p in ring_sizes:
-            if p > 8:
-                included_rings.append(p)
+        for p in np.unique(c):
+            if p > 4:
+                included_rings.append(p*2)
     else:
         included_rings = [x*2 for x in included_rings]
 
@@ -128,7 +116,6 @@ def monovalent(atoms,index,symbol,code,included_rings=None,path=None,bvect=None)
     Class, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
-    large_atoms = atoms.repeat(repeat)
     large_atoms,translation = center(large_atoms,index)
     traj, locations = add_cation(atoms,large_atoms,radii,index,symbol,paths,included_rings,class_count,path,bvect)
 

@@ -1,6 +1,6 @@
 __all__ = ['atoms_to_graph','get_paths','remove_non_rings','paths_to_atoms',
            'remove_dups','remove_labeled_dups','dict_to_atoms','get_vertices',
-           'shortest_valid_path','is_valid','all_paths']
+           'shortest_valid_path','is_valid','all_paths','remove_geometric_dups']
 
 '''
 This module contains utilities to be used by the rings.py module.
@@ -82,6 +82,164 @@ def atoms_to_graph(atoms,index,max_ring):
     # G.remove_nodes_from(delete)
     return G, large_atoms, repeat
 
+def remove_dups(paths):
+    '''
+    This is a helper function for get_orings and get_trings.
+    '''
+    d = []
+    for i in range(len(paths)):
+        for j in range((i+1), len(paths)):
+            if i != j:
+                st1 = set(paths[i])
+                st2 = set(paths[j])
+                if st1 == st2:
+                    d.append(int(j))
+    tmp_paths = []
+    for i in range(len(paths)):
+        if i not in d:
+            tmp_paths.append(paths[i])
+    paths = tmp_paths
+    return paths
+
+def paths_to_atoms(atoms,paths):
+    keepers = []
+    for i in paths:
+        for j in i:
+            if j not in keepers:
+                keepers.append(j)
+    d = [atom.index for atom in atoms if atom.index not in keepers]
+    tmp_atoms = atoms.copy()
+    del tmp_atoms[d]
+
+    return tmp_atoms
+
+def remove_geometric_dups(atoms,paths):
+    unique_paths = []
+    unique_distances = []
+    unique_angles = []
+    for p in paths:
+        atoms,trans = center(atoms,p[0])
+        dists = []
+        for x in range(0,len(p)-1):
+            for r in range(x+1,len(p)):
+                dist = round(atoms.get_distance(p[x],p[r]),2)
+                dists.append(dist)
+        dists.sort()
+
+        if dists not in unique_distances:
+            unique_paths.append(p)
+            unique_distances.append(dists)
+    return unique_paths
+
+def get_vertices(G,index):
+    import networkx as nx
+    vertices = []
+    neighbors = [n for n in nx.neighbors(G,index)]
+    l = len(neighbors)
+    for j in range(l-1):
+        for k in range(j+1,l):
+            vertices.append([neighbors[j],neighbors[k]])
+    return vertices
+
+def shortest_valid_path(G,o1,o2,index):
+    import networkx as nx
+    G2 = G.copy()
+    G2.remove_node(index)
+    flag = True
+    while flag:
+        path = nx.shortest_path(G2,o1,o2)
+        path.append(index)
+        l = len(path)
+        flag = False
+        flag, j = is_valid(G,path)
+        if flag:
+            G2.remove_node(path[j])
+    return path,l
+
+def is_valid(G,path):
+    import networkx as nx
+    l = len(path)
+    flag = False
+    for j in range(1,l-2,2):
+        node = path[j]
+        sp = nx.shortest_path(G,node,path[-1])
+        if len(sp) < l-j and len(sp) < j+2:
+            flag = True
+            break
+    return flag, j
+
+def all_paths(G,o1,o2,index,l):
+    import networkx as nx
+    all_paths = []
+    G2 = G.copy()
+    G2.remove_node(index)
+    paths = nx.all_simple_paths(G2,o1,o2,l)
+    for path in paths:
+        path.append(index)
+        if len(path) == l:
+            flag,j = is_valid(G,path)
+            if not flag and path not in all_paths:
+                all_paths.append(path)
+    return all_paths
+
+''' DEPRECATED FUNCTIONS '''
+def remove_labeled_dups(index_paths,label_paths,ring_sizes,atoms):
+
+    # first make dictionaries
+    label_rings = {}
+    index_rings = {}
+    for i,r in enumerate(label_paths):
+        length = int(len(r)/2)
+        if length not in label_rings:
+            label_rings[length] = [r]
+            index_rings[length] = [index_paths[i]]
+        else:
+            label_rings[length].append(r)
+            index_rings[length].append(index_paths[i])
+
+    # now we will remove duplicates
+    for length in ring_sizes:
+        ring_tlist = label_rings[length]
+        ring_full  = index_rings[length]
+        d = []
+        for i in range(len(ring_tlist)):
+            for j in range((i+1), len(ring_tlist)):
+                st1 = ' '.join(map(str,ring_tlist[i]))
+                st2 = ' '.join(map(str,ring_tlist[j]))
+                st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
+                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
+                    p = ring_full[i]
+                    atoms, trans = center(atoms,p[0])
+                    cross1 = []
+                    for x in range(1,len(p)+1,2):
+                        for r in range(x+2,len(p)+1,2):
+                            dist = round(atoms.get_distance(p[x],p[r]),1)
+                            cross1.append(dist)
+                    cross1.sort()
+
+
+                    p = ring_full[j]
+                    atoms, trans = center(atoms,p[0])
+                    cross2 = []
+                    for x in range(1,len(p)+1,2):
+                        for r in range(x+2,len(p)+1,2):
+                            dist = round(atoms.get_distance(p[x],p[r]),1)
+                            cross2.append(dist)
+                    cross2.sort()
+
+                    if cross1 == cross2:
+                        d.append(int(j))
+        tmp1 = []
+        tmp2 = []
+        for i in range(len(ring_tlist)):
+            if i not in d:
+                tmp1.append(ring_tlist[i])
+                tmp2.append(ring_full[i])
+        label_rings[length] = tmp1
+        index_rings[length] = tmp2
+
+    return  index_rings, label_rings
+
 def get_paths(G,index,ring_sizes):
     '''
     Get all the paths (rings) between the index atom and its neighbor
@@ -98,6 +256,62 @@ def get_paths(G,index,ring_sizes):
         if len(path) in ring_sizes:
             paths.append(path)
 
+    return paths
+
+def remove_sec(paths):
+    '''
+    This is a helper function for get_orings and get_trings.
+    '''
+    d = []
+    count2 = np.zeros(len(paths))
+
+    for i in range(len(paths)):
+        for j in range(i+1,len(paths)):
+            if i!= j:
+                ringi = paths[i]
+                ringj = paths[j]
+                ni = len(ringi)
+                nj = len(ringj)
+                if ni > nj and ni >= 16 and nj > 6:
+                    count=0
+                    for rj in ringj:
+                        if rj in ringi:
+                            count+=1
+                    if count == nj/2:
+                        count2[i]+=1
+                    elif count > nj/2:
+                        count2[i]+=2
+                if nj >ni and nj >= 16 and ni > 6:
+                    count=0
+                    for ri in ringi:
+                        if ri in ringj:
+                            count+=1
+                    if count == ni/2:
+                        count2[j]+=1
+                    elif count > ni/2:
+                        count2[j]+=2
+                if ni > nj and nj in [6,8]:
+                    count=0
+                    for rj in ringj:
+                        if rj in ringi:
+                            count+=1
+                    if count >= nj-2:
+                        count2[i]+=2
+                if nj > ni and ni in [6,8]:
+                    count=0
+                    for ri in ringi:
+                        if ri in ringj:
+                            count+=1
+                    if count >= ni-2:
+                        count2[j]+=2
+    for i,c in enumerate(count2):
+        if c >=2:
+            d.append(i)
+    tmp_paths = []
+    for i in range(len(paths)):
+        if i not in d:
+            tmp_paths.append(paths[i])
+    paths = tmp_paths
     return paths
 
 def remove_non_rings(atoms, paths):
@@ -162,150 +376,6 @@ def remove_non_rings(atoms, paths):
 
     return paths
 
-def remove_dups(paths):
-    '''
-    This is a helper function for get_orings and get_trings.
-    '''
-    d = []
-    for i in range(len(paths)):
-        for j in range((i+1), len(paths)):
-            if i != j:
-                st1 = set(paths[i])
-                st2 = set(paths[j])
-                if st1 == st2:
-                    d.append(int(j))
-    tmp_paths = []
-    for i in range(len(paths)):
-        if i not in d:
-            tmp_paths.append(paths[i])
-    paths = tmp_paths
-    return paths
-
-def remove_sec(paths):
-    '''
-    This is a helper function for get_orings and get_trings.
-    '''
-    d = []
-    count2 = np.zeros(len(paths))
-
-    for i in range(len(paths)):
-        for j in range(i+1,len(paths)):
-            if i!= j:
-                ringi = paths[i]
-                ringj = paths[j]
-                ni = len(ringi)
-                nj = len(ringj)
-                if ni > nj and ni >= 16 and nj > 6:
-                    count=0
-                    for rj in ringj:
-                        if rj in ringi:
-                            count+=1
-                    if count == nj/2:
-                        count2[i]+=1
-                    elif count > nj/2:
-                        count2[i]+=2
-                if nj >ni and nj >= 16 and ni > 6:
-                    count=0
-                    for ri in ringi:
-                        if ri in ringj:
-                            count+=1
-                    if count == ni/2:
-                        count2[j]+=1
-                    elif count > ni/2:
-                        count2[j]+=2
-                if ni > nj and nj in [6,8]:
-                    count=0
-                    for rj in ringj:
-                        if rj in ringi:
-                            count+=1
-                    if count >= nj-2:
-                        count2[i]+=2
-                if nj > ni and ni in [6,8]:
-                    count=0
-                    for ri in ringi:
-                        if ri in ringj:
-                            count+=1
-                    if count >= ni-2:
-                        count2[j]+=2
-    for i,c in enumerate(count2):
-        if c >=2:
-            d.append(i)
-    tmp_paths = []
-    for i in range(len(paths)):
-        if i not in d:
-            tmp_paths.append(paths[i])
-    paths = tmp_paths
-    return paths
-
-def paths_to_atoms(atoms,paths):
-    keepers = []
-    for i in paths:
-        for j in i:
-            if j not in keepers:
-                keepers.append(j)
-    d = [atom.index for atom in atoms if atom.index not in keepers]
-    tmp_atoms = atoms.copy()
-    del tmp_atoms[d]
-
-    return tmp_atoms
-
-def remove_labeled_dups(index_paths,label_paths,ring_sizes,atoms):
-
-    # first make dictionaries
-    label_rings = {}
-    index_rings = {}
-    for i,r in enumerate(label_paths):
-        length = int(len(r)/2)
-        if length not in label_rings:
-            label_rings[length] = [r]
-            index_rings[length] = [index_paths[i]]
-        else:
-            label_rings[length].append(r)
-            index_rings[length].append(index_paths[i])
-
-    # now we will remove duplicates
-    for length in ring_sizes:
-        ring_tlist = label_rings[length]
-        ring_full  = index_rings[length]
-        d = []
-        for i in range(len(ring_tlist)):
-            for j in range((i+1), len(ring_tlist)):
-                st1 = ' '.join(map(str,ring_tlist[i]))
-                st2 = ' '.join(map(str,ring_tlist[j]))
-                st2_2 = ' '.join(map(str,reversed(ring_tlist[j])))
-                if st2 in st1 + ' ' + st1 or st2_2 in st1 + ' ' + st1:
-                    p = ring_full[i]
-                    atoms, trans = center(atoms,p[0])
-                    cross1 = []
-                    for x in range(1,len(p)+1,2):
-                        for r in range(x+2,len(p)+1,2):
-                            dist = round(atoms.get_distance(p[x],p[r]),1)
-                            cross1.append(dist)
-                    cross1.sort()
-
-
-                    p = ring_full[j]
-                    atoms, trans = center(atoms,p[0])
-                    cross2 = []
-                    for x in range(1,len(p)+1,2):
-                        for r in range(x+2,len(p)+1,2):
-                            dist = round(atoms.get_distance(p[x],p[r]),1)
-                            cross2.append(dist)
-                    cross2.sort()
-
-                    if cross1 == cross2:
-                        d.append(int(j))
-        tmp1 = []
-        tmp2 = []
-        for i in range(len(ring_tlist)):
-            if i not in d:
-                tmp1.append(ring_tlist[i])
-                tmp2.append(ring_full[i])
-        label_rings[length] = tmp1
-        index_rings[length] = tmp2
-
-    return  index_rings, label_rings
-
 def dict_to_atoms(index_paths,atoms):
     trajectories = {}
     com = atoms.get_center_of_mass()
@@ -321,54 +391,3 @@ def dict_to_atoms(index_paths,atoms):
         trajectories[length]=tmp_traj
 
     return trajectories
-
-def get_vertices(G,index):
-    import networkx as nx
-    vertices = []
-    neighbors = [n for n in nx.neighbors(G,index)]
-    l = len(neighbors)
-    for j in range(l-1):
-        for k in range(j+1,l):
-            vertices.append([neighbors[j],neighbors[k]])
-    return vertices
-
-def shortest_valid_path(G,o1,o2,index):
-    import networkx as nx
-    G2 = G.copy()
-    G2.remove_node(index)
-    flag = True
-    while flag:
-        path = nx.shortest_path(G2,o1,o2)
-        path.append(index)
-        l = len(path)
-        flag = False
-        flag, j = is_valid(G,path)
-        if flag:
-            G2.remove_node(path[j])
-    return path,l
-
-def is_valid(G,path):
-    import networkx as nx
-    l = len(path)
-    flag = False
-    for j in range(1,l-2,2):
-        node = path[j]
-        sp = nx.shortest_path(G,node,path[-1])
-        if len(sp) < l-j and len(sp) < j+2:
-            flag = True
-            break
-    return flag, j
-
-def all_paths(G,o1,o2,index,l):
-    import networkx as nx
-    all_paths = []
-    G2 = G.copy()
-    G2.remove_node(index)
-    paths = nx.all_simple_paths(G2,o1,o2,l)
-    for path in paths:
-        path.append(index)
-        if len(path) == l:
-            flag,j = is_valid(G,path)
-            if not flag and path not in all_paths:
-                all_paths.append(path)
-    return all_paths

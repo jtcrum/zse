@@ -9,11 +9,27 @@ from zse.substitute import *
 import numpy as np
 import math
 
-def get_pairs(code,validation='d2'):
-    tr,lr,traj = get_fwrings(code,validation=validation)
+from collections import defaultdict
+
+def get_pairs(code,validation=None,max_ring=12):
     z = framework(code)
-    ring_sizes = get_ring_sizes(code)
-    max_ring = max(ring_sizes)*2
+    tinds = get_tsites(code)[2]
+    c,r,ra,a = get_unique_rings(z,tinds,validation=validation,max_ring=max_ring)
+    lr = defaultdict(list)
+    tr = defaultdict(list)
+
+    index_list = np.arange(len(a)).reshape(-1,len(z))
+    labels = site_labels(z,code)
+    for p in r:
+        p.insert(0,p.pop())
+        tr[int(len(p)/2)].append(p)
+        temp = []
+        for x in p:
+            ind = int(np.where(index_list==x)[1])
+            temp.append(labels[ind])
+        lr[int(len(p)/2)].append(temp)
+
+    max_ring*=2
     traj = []
     alltlist = []
     allpairlist=[]
