@@ -1,4 +1,4 @@
-__all__ = ['read_cif']
+__all__ = ['read_cif','cif_site_labels']
 
 from ase.io import read
 import sys
@@ -180,6 +180,19 @@ def read_cif(cif):
     ts,tm,tinds = get_tsites(cif)
     os,om,oinds = get_osites(cif)
     return atoms,ts,tm,tinds,os,om,oinds
+
+def cif_site_labels(cif):
+    atoms,ts,tm,tinds,os,om,oinds = read_cif(cif)
+    labels = {}
+    for i,t in enumerate(ts):
+        for j in range(tm[i]):
+            labels[tinds[i]+j] = t
+
+    for i,o in enumerate(os):
+        for j in range(om[i]):
+            labels[oinds[i]+j] = o
+
+    return labels
 
 ''' DEPRECRATED FUNCTIONS'''
 
