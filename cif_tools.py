@@ -1,10 +1,187 @@
-__all__ = ['get_indices']
+__all__ = ['read_cif']
 
 from ase.io import read
 import sys
+import os
 import logging
 from math import *
 import numpy as np
+import pkg_resources
+path = '.temp_files/'
+filepath = pkg_resources.resource_filename(__name__,path)
+
+def get_atom_lines(alllines):
+    order = []
+    for i,line in enumerate(alllines):
+        if '_atom' in line:
+            order.append(line)
+            start = i+1
+    end = False
+    for i,line in enumerate(alllines[i:]):
+        if '_' in line:
+            end = i-1
+    if not end:
+        end = len(alllines)-1
+    new_order = []
+    for i,o in enumerate(order):
+        if 'site_label' in o:
+            new_order.append(i)
+        if 'fract_x' in o:
+            new_order.append(i)
+        if 'fract_y' in o:
+            new_order.append(i)
+        if 'fract_z' in o:
+            new_order.append(i)
+    return start,end,new_order
+
+def fix_cif(cif):
+    f = open(cif,"r")
+    alllines = f.readlines()
+    f.close()
+
+    for i, line in enumerate(alllines):
+        if 'IT_coordinate_system_code' in line:
+            fields = line.split()
+            alllines[i] = '_symmetry_space_group_setting {0} \n'.format(fields[-1])
+
+        if '_atom_site_type_symbol' in line and '_atom_site_label' in alllines[i+1]:
+            alllines[i],alllines[i+1] = alllines[i+1],alllines[i]
+    file_name = cif.rstrip('.cif')
+    temp_file = '{0}/{1}_temp.cif'.format(filepath,file_name.split('/')[-1])
+    f = open(temp_file,"w")
+    f.writelines(alllines)
+    f.close()
+    atoms = read(temp_file);
+    os.remove(temp_file)
+    return atoms, alllines
+
+def get_tsites(cif):
+    from ase.geometry import get_distances
+    tsites = []
+    tpos = []
+    z,alllines = fix_cif(cif)
+    si = [atom.index for atom in z if atom.symbol!='O']
+    start,end,order = get_atom_lines(alllines)
+    for line in alllines[start:end+1]:
+        if 'Si' in line or 'T' in line:
+            line = line.split()
+            temp_label = line[order[0]]
+            if 'Si' in temp_label:
+                temp_label = temp_label.replace('Si','T')
+            tsites.append(temp_label)
+            pos = [float(line[order[1]]),float(line[order[2]]),float(line[order[3]])]
+            tpos.append([round(num,2) for num in pos])
+
+    tpos = np.array(tpos)
+    pos = z[si].get_scaled_positions()
+    tinds = []
+    tmults = []
+    t_class = []
+    for tp in tpos:
+        for i,p in enumerate(pos):
+            p = [round(num,2) for num in p]
+            diff = abs(tp-p)
+            if sum(diff) <= 0.03:
+                tinds.append(si[i])
+    for i in range(1,len(tsites)):
+        tmults.append(tinds[i]-tinds[i-1])
+    tmults.append(si[-1]-tinds[-1]+1)
+
+    #
+    # si = [atom.index for atom in z if atom.symbol=='Si']
+    # o  = [atom.index for atom in z if atom.symbol=='O']
+    # si_pos = z[si].positions
+    # cell = z.cell
+    # distances = get_distances(si_pos,si_pos,cell=cell,pbc=[1,1,1])[1]
+    #
+    # for i in tinds:
+    #     orig_ind = si.index(i)
+    #     dists = sorted(distances[orig_ind])
+    #     t_class.append([round(num,2) for num in dists])
+    #
+    #
+    # for i,d in enumerate(t_class):
+    #     for j,t in enumerate(distances):
+    #         dist = [round(num,2) for num in sorted(t)]
+    #         if np.array_equal(dist,d):
+    #             dist = [round(num,2) for num in sorted(t)]
+    #             d = np.array(d)
+    #             dist = np.array(dist)
+    #             diff = abs(d - dist)
+    #             if sum(diff) <= 0.1:
+    #                 tmults[i]+=1
+
+    n = len(si)
+    sn = sum(tmults)
+    if n != sn:
+        print('Something Went Wrong With T Sites')
+    return tsites, tmults, tinds
+
+def get_osites(cif):
+    from ase.geometry import get_distances
+    osites = []
+    opos = []
+    z,alllines = fix_cif(cif)
+    start,end,order = get_atom_lines(alllines)
+    for line in alllines[start:end+1]:
+        if 'O' in line:
+            line = line.split()
+            osites.append(line[order[0]])
+            pos = [float(line[order[1]]),float(line[order[2]]),float(line[order[3]])]
+            opos.append([round(num,2) for num in pos])
+    opos = np.array(opos)
+    pos = z.get_scaled_positions()
+    oinds = []
+    omults = []
+    o_class = []
+
+    si = [atom.index for atom in z if atom.symbol=='Si']
+    o  = [atom.index for atom in z if atom.symbol=='O']
+    o_pos = z[o].get_scaled_positions()
+    for op in opos:
+        for i,p in enumerate(o_pos):
+            p = np.array([round(num,2) for num in p])
+            diff = abs(op-p)
+            if sum(diff) <= 0.02:
+                oinds.append(o[i])
+
+    for i in range(1,len(osites)):
+        omults.append(oinds[i]-oinds[i-1])
+    omults.append(o[-1]-oinds[-1]+1)
+
+    # all_pos = z.positions
+    # o_pos = z[o].positions
+    # si_pos = z[si].positions
+    # cell = z.cell
+    # distances = get_distances(o_pos,all_pos,cell=cell,pbc=[1,1,1])[1]
+    #
+    # for i in oinds:
+    #     orig_ind = o.index(i)
+    #     dists = sorted(distances[orig_ind])
+    #     o_class.append([round(num,2) for num in dists])
+    #
+    # for i,d in enumerate(o_class):
+    #     for j,t in enumerate(distances):
+    #         dist = [round(num,2) for num in sorted(t)]
+    #         d = np.array(d)
+    #         dist = np.array(dist)
+    #         diff = abs(d - dist)
+    #         if sum(diff) <= 0.05:
+    #             omults[i]+=1
+
+    n = len(o)
+    sn = sum(omults)
+    if n != sn:
+        print('Something Went Wrong With O Sites')
+    return osites, omults, oinds
+
+def read_cif(cif):
+    atoms, alllines = fix_cif(cif)
+    ts,tm,tinds = get_tsites(cif)
+    os,om,oinds = get_osites(cif)
+    return atoms,ts,tm,tinds,os,om,oinds
+
+''' DEPRECRATED FUNCTIONS'''
 
 def float_with_error(x):
     """
@@ -173,6 +350,15 @@ def get_indices(cif):
     '''
 
     tsites, tmults, osites, omults = get_mults(cif)
+    f = open(cif,"r")
+    alllines = f.read()
+    f.close()
+
+    for i, line in enumerate(alllines):
+        if 'IT_coordinate_system_code' in line:
+            fields = line.split()
+            alllines[i] = '_symmetry_space_group_setting {0}'.format(fields[-1])
+
 
     atoms = read(cif)
 
