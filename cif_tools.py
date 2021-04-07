@@ -16,15 +16,20 @@ def get_atom_lines(alllines):
         if '_atom' in line:
             order.append(line)
             start = i+1
-    end = False
-    for i,line in enumerate(alllines[i:]):
-        if '_' in line:
-            end = i-1
+    end = None
+    for i,line in enumerate(alllines[start:]):
+
+        if len(line.split()) == 0:
+            end = start+i-1
+            break
     if not end:
         end = len(alllines)-1
+
     new_order = []
     for i,o in enumerate(order):
         if 'site_label' in o:
+            new_order.append(i)
+        if 'site_type_symbol' in o:
             new_order.append(i)
         if 'fract_x' in o:
             new_order.append(i)
@@ -32,6 +37,7 @@ def get_atom_lines(alllines):
             new_order.append(i)
         if 'fract_z' in o:
             new_order.append(i)
+
     return start,end,new_order
 
 def fix_cif(cif):
@@ -66,10 +72,12 @@ def get_tsites(cif):
         if 'Si' in line or 'T' in line:
             line = line.split()
             temp_label = line[order[0]]
+            if not any(str.isdigit(c) for c in temp_label):
+                temp_label = line[order[1]]
             if 'Si' in temp_label:
                 temp_label = temp_label.replace('Si','T')
             tsites.append(temp_label)
-            pos = [float(line[order[1]]),float(line[order[2]]),float(line[order[3]])]
+            pos = [float(line[order[2]]),float(line[order[3]]),float(line[order[4]])]
             tpos.append([round(num,2) for num in pos])
 
     tpos = np.array(tpos)
@@ -83,6 +91,7 @@ def get_tsites(cif):
             diff = abs(tp-p)
             if sum(diff) <= 0.03:
                 tinds.append(si[i])
+
     for i in range(1,len(tsites)):
         tmults.append(tinds[i]-tinds[i-1])
     tmults.append(si[-1]-tinds[-1]+1)
@@ -126,8 +135,11 @@ def get_osites(cif):
     for line in alllines[start:end+1]:
         if 'O' in line:
             line = line.split()
-            osites.append(line[order[0]])
-            pos = [float(line[order[1]]),float(line[order[2]]),float(line[order[3]])]
+            temp_label = line[order[0]]
+            if not any(str.isdigit(c) for c in temp_label):
+                temp_label = line[order[1]]
+            osites.append(temp_label)
+            pos = [float(line[order[2]]),float(line[order[3]]),float(line[order[4]])]
             opos.append([round(num,2) for num in pos])
     opos = np.array(opos)
     pos = z.get_scaled_positions()
