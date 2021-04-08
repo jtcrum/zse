@@ -141,30 +141,41 @@ def get_vertices(G,index):
             vertices.append([neighbors[j],neighbors[k]])
     return vertices
 
-def shortest_valid_path(G,o1,o2,index):
+def shortest_valid_path(G,o1,o2,index,l):
     import networkx as nx
     G2 = G.copy()
     G2.remove_node(index)
     flag = True
+    l2=6
+    p=[]
     while flag:
-        path = nx.shortest_path(G2,o1,o2)
-        path.append(index)
-        l = len(path)
-        flag = False
-        flag, j = is_valid(G,path)
+        paths = nx.all_simple_paths(G2,o1,o2,l2-1)
+        for p in paths:
+            p.append(index)
+            if len(p)==l2:
+                flag, j = is_valid(G,p)
+            if not flag:
+                break
         if flag:
-            G2.remove_node(path[j])
-    return path,l
+            l2+=2
+        if l2 > l:
+            p = [1]
+            break
+    return p,len(p)
 
 def is_valid(G,path):
     import networkx as nx
     l = len(path)
     flag = False
-    for j in range(1,l-2,2):
-        node = path[j]
-        sp = nx.shortest_path(G,node,path[-1])
-        if len(sp) < l-j and len(sp) < j+2:
-            flag = True
+    for j in range(1,l-1,2):
+        for k in range(j+2,l,2):
+            node = path[j]
+            sp = nx.shortest_path(G,node,path[k])
+
+            if len(sp) < k-j+1 and len(sp) < l-(k-j)+1:
+                flag = True
+                break
+        if flag:
             break
     return flag, j
 
