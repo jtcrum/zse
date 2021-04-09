@@ -4,7 +4,7 @@
 Authors: Jerry T. Crum, Justin R. Crum \\
 
 * Description
-This is a package for automating structure generation and characterization of zeolites for computational chemistry.
+This is a package to automate zeolite structure generation and characterization for computational chemistry.
 
 * Requirements
 This package is built around the ASE atoms object, and thus requires installation of ASE, available at: https://wiki.fysik.dtu.dk/ase/install.html.
@@ -45,7 +45,7 @@ Jian Ren Lim, Elsa Koninckz
 ** Computational Resources
 This research was supported in part by the Notre Dame [[https://docs.crc.nd.edu/index.html][Center for Research Computing]] through access to the HPC clusters.
 ** Research Group
-Many thanks to all the members of the [[https://wfschneidergroup.github.io][Schneider Group]] who listened to me present this material over and over again, and provide input into how to make ZSE more useful. 
+Many thanks to all the members of the [[https://wfschneidergroup.github.io][Schneider Group]] who listened to me present this material over and over again, and provided input into how to make ZSE more useful. 
 
 -------
 #+BEGIN_center
