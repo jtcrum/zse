@@ -50,6 +50,5 @@ Many thanks to all the members of the [[https://wfschneidergroup.github.io][Schn
 -------
 #+ATTR_LATEX: :float wrap :width 0.3/textwidth
 [[./examples/figures/cistar_logo.png]]
-
 #+ATTR_LATEX: :float wrap :width 0.3/textwidth
 [[./examples/figures/comsel_logo.png]]
