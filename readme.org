@@ -39,3 +39,17 @@ Sichi Li, Craig Waitt, Yujia Wang, William Schneider
 ** Testers
 
 Jian Ren Lim, Elsa Koninckz
+** Funding Sources
+- [[cistar.us][Center for Innovative and Strategic Transformation of Alkane Resources]]
+- [[https://graduateschool.nd.edu/graduate-training/leadership/society-of-schmitt-fellows/][Arthur J. Schmitt Leadership Fellowship]]
+** Computational Resources
+This research was supported in part by the Notre Dame [[https://docs.crc.nd.edu/index.html][Center for Research Computing]] through access to the HPC clusters.
+** Research Group
+Many thanks to all the members of the [[https://wfschneidergroup.github.io][Schneider Group]] who listened to me present this material over and over again, and provide input into how to make ZSE more useful. 
+
+-------
+#+ATTR_LATEX: :float wrap :width 0.3/textwidth
+[[./examples/figures/cistar_logo.png]]
+
+#+ATTR_LATEX: :float wrap :width 0.3/textwidth
+[[./examples/figures/comsel_logo.png]]
