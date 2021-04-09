@@ -40,7 +40,7 @@ Sichi Li, Craig Waitt, Yujia Wang, William Schneider
 
 Jian Ren Lim, Elsa Koninckz
 ** Funding Sources
-- [[https://cistar.us][Center for Innovative and Strategic Transformation of Alkane Resources]
+- [[https://cistar.us][Center for Innovative and Strategic Transformation of Alkane Resources]]
 - [[https://graduateschool.nd.edu/graduate-training/leadership/society-of-schmitt-fellows/][Arthur J. Schmitt Leadership Fellowship]]
 ** Computational Resources
 This research was supported in part by the Notre Dame [[https://docs.crc.nd.edu/index.html][Center for Research Computing]] through access to the HPC clusters.
