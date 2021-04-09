@@ -1,6 +1,7 @@
+#+ATTR_LATEX: :width 0.6/textwidth
+[[./examples/figures/zse_logo.jpeg]]
 * Zeolite Simulation Environment
-Author: Jerry Crum \\
-Updated: 1/12/2021
+Authors: Jerry T. Crum, Justin R. Crum \\
 
 * Description
 This is a package for automating structure generation and characterization of zeolites for computational chemistry.
@@ -19,10 +20,12 @@ Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/sit
 * Current Modules
 To see how to use each of the modules, please visit [[/examples][examples]].
 - zse.cation
+- zse.cif_tools
 - zse.collections
 - zse.protonate
 - zse.rings
 - zse.substitute
+- zse.tpairs
 - zse.utilities
 * Contributions
 
