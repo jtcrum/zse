@@ -34,8 +34,8 @@ If there is something you would like to see added to this package, or if you wou
 * Acknowledgments
 ** Contributors
 
-Jerry Crum, Justin Crum, Sichi Li, Yujia Wang, William Schneider
+Sichi Li, Craig Waitt, Yujia Wang, William Schneider
 
 ** Testers
 
-Craig Waitt, Jian Ren Lim, Elsa Koninckz
+Jian Ren Lim, Elsa Koninckz
