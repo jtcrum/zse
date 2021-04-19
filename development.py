@@ -1,11 +1,6 @@
 '''
-The goal of this module is to identify the rings associated with an oxygen or
-tsite in any given zeolite framework. This method uses graph theory to find
-neighbors of the specified atom, and then a depth first search for a cycle back
-to that atom. To make the code as efficient as possible, its important to
-include what types are rings are possible in that framework. This information is
-stored within the collections module of this package. Check the examples page on
-github (github.com/jtcrum/zse/examples) for specifics on how to use.
+This is where I write new functions to test
+before incorporating into the main code.
 '''
 
 __all__ = ['get_orings','get_trings','get_fwrings','get_geometry']
