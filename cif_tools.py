@@ -1,14 +1,25 @@
 __all__ = ['read_cif','cif_site_labels']
 
 from ase.io import read
+from ase.spacegroup import spacegroup
 import sys
 import os
 import logging
 from math import *
 import numpy as np
 import pkg_resources
+import warnings
+warnings.filterwarnings("ignore")
+
+
 path = '.temp_files/'
 filepath = pkg_resources.resource_filename(__name__,path)
+
+'''
+NOTE ABOUT CIF FILE FORMATS:
+CIFs must include '_symmetry_Int_Taables_number' to be read by ASE.
+If this is not included please edit your CIF file to include this information.
+'''
 
 def get_atom_lines(alllines):
     order = []
@@ -52,6 +63,7 @@ def fix_cif(cif):
 
         if '_atom_site_type_symbol' in line and '_atom_site_label' in alllines[i+1]:
             alllines[i],alllines[i+1] = alllines[i+1],alllines[i]
+
     file_name = cif.rstrip('.cif')
     temp_file = '{0}/{1}_temp.cif'.format(filepath,file_name.split('/')[-1])
     f = open(temp_file,"w")
