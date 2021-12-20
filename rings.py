@@ -8,7 +8,8 @@ stored within the collections module of this package. Check the examples page on
 github (github.com/jtcrum/zse/examples) for specifics on how to use.
 '''
 
-__all__ = ['get_orings','get_trings','get_fwrings','get_vertex_symbols','get_rings','get_unique_rings']
+__all__ = ['get_orings','get_trings','get_fwrings','get_vertex_symbols',
+            'get_rings','get_unique_rings','get_ordered_vertex']
 
 from zse.collections import get_ring_sizes, framework
 from zse.ring_utilities import *
@@ -120,6 +121,77 @@ def get_unique_rings(atoms,tsites,validation=None,max_ring = 12):
 
     return ring_list, paths, ring_atoms, a
 
+def get_ordered_vertex(atoms,index,max_ring=12):
+    '''
+    Function to find the vertex symbol of a given T-site, and return that
+    vertex symbol with the rings listed in a specific order. This can be used
+    to differientiate T-sites with the same vertex symbol, but different ring
+    orientation around the T-site.
+
+    i.e.
+        The vertex symbol of MOR T3 and MON T1 are both: 4·5_2·5·8_2·5·8_2
+        This function would return the following however:
+            MOR T3: 8_2•8_2•4•5_2•5•5
+            MON T1: 8_2•8_2•5_2•4•5•5
+        Letting us know that the connectivity of the rings around the T-site are
+        different between these two T-sites. Visual inspection of the framework
+        would tell us these two vertex symbols are different.
+
+    INPUTS:
+    atoms:      (ASE atoms object) the zeolite framework to be analyzed
+                works best if you remove any adsorbates first
+    index:      (int) Index of the atom that you want to classify.
+                      Must but a T-site and not an oxygen.
+    max_ring:   (int) Maximum size ring to search for. Time to compute
+                      scales with the maximum ring size.
+
+    OUTPUTS:
+    ordered_vertex:  (str) The ordered vertex symbol for the T-site.
+    paths:      (2d list) The actual atom indices that compose found rings.
+                In the order they are presented in the ordered_vertex.
+    ring_atoms: (list of atoms objects) for all the rings found.
+    atoms:      (ase atoms object) of the framework repeated large enough to
+                visualize all the rings.
+    '''
+
+    # need to multiply by two to consider oxygens
+    max_ring*=2
+
+    # repeat the unit cell so it is large enough to capture the max ring size
+    # also turn this new larger unit cell into a graph
+    G, large_atoms, repeat = atoms_to_graph(atoms,index,max_ring)
+    index = [atom.index for atom in large_atoms if atom.tag==index][0]
+    index_symbol = large_atoms[index].symbol
+
+    # find cycles that don't contain any shortcuts
+    paths = goetzke(G,index,max_ring)
+
+    # remove some cycles based on other validation rules
+    if index_symbol == 'O':
+        print("WARNING: Can't find vertex symbols of oxygen atoms")
+        return False, False, False, False
+    else:
+        paths = vertex(paths)
+
+
+    # convert the indices of the paths back to standard cell indices
+    ordered_vertex, paths = vertex_order(paths)
+    tmp_paths = paths
+    paths = []
+    for p in tmp_paths:
+        temp = []
+        for i in p:
+            temp.append(large_atoms[i].tag)
+        paths.append(temp)
+
+    # get the ordered vertex symbol
+
+
+    # make a collection of atoms objects to view the rings
+    ring_atoms = [paths_to_atoms(large_atoms,[p]) for p in tmp_paths]
+    atoms = atoms.repeat(repeat)
+
+    return ordered_vertex, paths, ring_atoms, atoms
 
 ''' DEPRECRATED FUNCTIONS '''
 

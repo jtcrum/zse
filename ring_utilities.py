@@ -1,6 +1,7 @@
 __all__ = ['atoms_to_graph','get_paths','remove_non_rings','paths_to_atoms',
            'remove_dups','remove_labeled_dups','dict_to_atoms','get_vertices',
-           'shortest_valid_path','is_valid','all_paths','remove_geometric_dups']
+           'shortest_valid_path','is_valid','all_paths','remove_geometric_dups',
+           'vertex_order']
 
 '''
 This module contains utilities to be used by the rings.py module.
@@ -8,6 +9,7 @@ This module contains utilities to be used by the rings.py module.
 
 import numpy as np
 import math
+from collections import defaultdict as dd
 from zse.utilities import *
 
 def atoms_to_graph(atoms,index,max_ring):
@@ -192,6 +194,66 @@ def all_paths(G,o1,o2,index,l):
             if not flag and path not in all_paths:
                 all_paths.append(path)
     return all_paths
+
+def vertex_order(r):
+
+    '''
+    Find the unique oxygens attached to the T-site.
+    Find the opposite angle rings, and sort them by size.
+    '''
+    oxygens = dd(list)
+
+    for path in r:
+        oxygens[path[-1]].append(len(path))
+        oxygens[path[1]].append(len(path))
+
+    oxys = []
+    weight = []
+    for o in oxygens:
+        oxys.append(o)
+        oxygens[o].sort(reverse=True)
+        weight.append(oxygens[o])
+
+    zipped_lists = zip(weight,oxys)
+    sp = sorted(zipped_lists,reverse=True)
+    tuples = zip(*sp)
+    weight, oxys = [list(tuple) for tuple in tuples]
+
+    order = []
+    for q,o1 in enumerate(oxys[:-1]):
+        for x,o2 in enumerate(oxys[q+1:]):
+            order.append([o1,o2])
+
+    new_r = []
+    counts = []
+    sizes = []
+    for o in order:
+        count = 0
+        flag = False
+        r.reverse()
+        for path in r:
+            if o[0] in path and o[1] in path:
+                new_r.append(path)
+                count+=1
+                flag = True
+        if flag:
+            counts.append(count)
+            sizes.append(len(new_r[-1]))
+        else:
+            counts.append(0)
+            sizes.append(0)
+
+    ordered_v = []
+    for c,s in zip(counts,sizes):
+        if c == 1:
+            ordered_v.append('{0}'.format(int(s/2)))
+        elif c == 0:
+            ordered_v.append('*')
+        else:
+            ordered_v.append('{0}_{1}'.format(int(s/2),c))
+    ordered_v = '•'.join(ordered_v)
+
+    return ordered_v,new_r
 
 ''' DEPRECATED FUNCTIONS '''
 def remove_labeled_dups(index_paths,label_paths,ring_sizes,atoms):
