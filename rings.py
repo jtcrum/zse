@@ -190,6 +190,13 @@ def get_ordered_vertex(atoms,index,max_ring=12):
     # make a collection of atoms objects to view the rings
     ring_atoms = [paths_to_atoms(large_atoms,[p]) for p in tmp_paths]
     atoms = atoms.repeat(repeat)
+    keep = []
+    for path in paths:
+        for x in path:
+            if x not in keep:
+                keep.append(x)
+    atoms,vect = center(atoms,keep[0])
+    atoms = atoms[keep]
 
     return ordered_vertex, paths, ring_atoms, atoms
 
