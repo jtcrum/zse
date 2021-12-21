@@ -11,6 +11,7 @@ import numpy as np
 import math
 from collections import defaultdict as dd
 from zse.utilities import *
+from itertools import permutations as perm
 
 def atoms_to_graph(atoms,index,max_ring):
     '''
@@ -197,51 +198,52 @@ def all_paths(G,o1,o2,index,l):
 
 def vertex_order(r):
 
-    '''
-    Find the unique oxygens attached to the T-site.
-    Find the opposite angle rings, and sort them by size.
-    '''
-    oxygens = dd(list)
+    oxygens = []
+    o_pair_paths = dd(list)
+    o_pair_sizes = dd(int)
+    o_pair_counts = dd(lambda: 0)
+    o_pair_weights = dd(lambda: 0)
 
     for path in r:
-        oxygens[path[-1]].append(len(path))
-        oxygens[path[1]].append(len(path))
+        if path[1] not in oxygens:
+            oxygens.append(path[1])
+        if path[-1] not in oxygens:
+            oxygens.append(path[-1])
+        oxys = sorted([str(path[1]),str(path[-1])])
+        o_pair_paths['-'.join(oxys)].append(path)
+        o_pair_sizes['-'.join(oxys)] = len(path)
+        o_pair_counts['-'.join(oxys)] += 1
+        o_pair_weights['-'.join(oxys)] += len(path)
 
-    oxys = []
-    weight = []
-    for o in oxygens:
-        oxys.append(o)
-        oxygens[o].sort(reverse=True)
-        weight.append(oxygens[o])
 
-    zipped_lists = zip(weight,oxys)
+    perms = [x for x in perm(oxygens)]
+    weights = []
+    order = [[0,2],[0,1],[1,2],[2,3],[3,0],[1,3]]
+    for p in perms:
+        w = []
+        for o in order:
+            k = '-'.join(sorted([str(p[o[0]]),str(p[o[1]])]))
+            w.append(o_pair_weights[k])
+        weights.append(w)
+
+    zipped_lists = zip(weights,perms)
     sp = sorted(zipped_lists,reverse=True)
     tuples = zip(*sp)
-    weight, oxys = [list(tuple) for tuple in tuples]
+    weights, perms = [list(tuple) for tuple in tuples]
 
-    order = []
-    for q,o1 in enumerate(oxys[:-1]):
-        for x,o2 in enumerate(oxys[q+1:]):
-            order.append([o1,o2])
 
     new_r = []
     counts = []
     sizes = []
+    oxygens = perms[0]
+    weights = weights[0]
+
     for o in order:
-        count = 0
-        flag = False
-        r.reverse()
-        for path in r:
-            if o[0] in path and o[1] in path:
-                new_r.append(path)
-                count+=1
-                flag = True
-        if flag:
-            counts.append(count)
-            sizes.append(len(new_r[-1]))
-        else:
-            counts.append(0)
-            sizes.append(0)
+        k = '-'.join(sorted([str(oxygens[o[0]]),str(oxygens[o[1]])]))
+        sizes.append(o_pair_sizes[k])
+        counts.append(o_pair_counts[k])
+        for x in o_pair_paths[k]:
+            new_r.append(x)
 
     ordered_v = []
     for c,s in zip(counts,sizes):
@@ -252,6 +254,7 @@ def vertex_order(r):
         else:
             ordered_v.append('{0}_{1}'.format(int(s/2),c))
     ordered_v = '•'.join(ordered_v)
+    c = [int(len(x)/2) for x in new_r]
 
     return ordered_v,new_r
 
