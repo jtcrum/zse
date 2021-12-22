@@ -222,8 +222,11 @@ def vertex_order(r):
     for p in perms:
         w = []
         for o in order:
-            k = '-'.join(sorted([str(p[o[0]]),str(p[o[1]])]))
-            w.append(o_pair_weights[k])
+            try:
+                k = '-'.join(sorted([str(p[o[0]]),str(p[o[1]])]))
+                w.append(o_pair_weights[k])
+            except:
+                pass
         weights.append(w)
 
     zipped_lists = zip(weights,perms)
@@ -239,11 +242,14 @@ def vertex_order(r):
     weights = weights[0]
 
     for o in order:
-        k = '-'.join(sorted([str(oxygens[o[0]]),str(oxygens[o[1]])]))
-        sizes.append(o_pair_sizes[k])
-        counts.append(o_pair_counts[k])
-        for x in o_pair_paths[k]:
-            new_r.append(x)
+        try:
+            k = '-'.join(sorted([str(oxygens[o[0]]),str(oxygens[o[1]])]))
+            sizes.append(o_pair_sizes[k])
+            counts.append(o_pair_counts[k])
+            for x in o_pair_paths[k]:
+                new_r.append(x)
+        except:
+            pass
 
     ordered_v = []
     for c,s in zip(counts,sizes):
