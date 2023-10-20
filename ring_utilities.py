@@ -81,7 +81,7 @@ def atoms_to_graph(atoms,index,max_ring):
             matrix[osites[o],t]=1
     # now we make the graph
     import networkx as nx
-    G = nx.from_numpy_matrix(matrix)
+    G = nx.from_numpy_array(matrix)
     # G.remove_nodes_from(delete)
     return G, large_atoms, repeat
 
