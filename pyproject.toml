@@ -1,0 +1,120 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zse"
+description="Zeolite simulation environment."
+version = "0.0.1"
+readme = "README.md"
+license = { text = "BSD-3" }
+keywords = ["zeolites"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+]
+requires-python = ">=3.9, <3.13"
+dependencies = ["ase"]
+
+[tool.setuptools.package-data]
+zse = ["py.typed"]
+
+[tool.pyright]
+include = ["zse"]
+exclude = ["**/__pycache__"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-p no:warnings", "--import-mode=importlib"]
+xfail_strict = true
+log_cli_level = "warn"
+testpaths = ["tests"]
+
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.tox
+)/
+'''
+
+[tool.isort]
+profile = 'black'
+skip_gitignore = true
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "except ImportError",
+]
+
+[tool.ruff]
+select = [
+  "E", "F", "W", # flake8
+  "B",           # flake8-bugbear
+  "I",           # isort
+  "ARG",         # flake8-unused-arguments
+  "C4",          # flake8-comprehensions
+  "EM",          # flake8-errmsg
+  "ICN",         # flake8-import-conventions
+  "ISC",         # flake8-implicit-str-concat
+  "G",           # flake8-logging-format
+  "PGH",         # pygrep-hooks
+  "PIE",         # flake8-pie
+  "PL",          # pylint
+  "PT",          # flake8-pytest-style
+  "PTH",         # flake8-use-pathlib
+  "RET",         # flake8-return
+  "RUF",         # Ruff-specific
+  "SIM",         # flake8-simplify
+  "T20",         # flake8-print
+  "UP",          # pyupgrade
+  "YTT",         # flake8-2020
+  "EXE",         # flake8-executable
+  "NPY",         # NumPy specific rules
+  "PD",          # pandas-vet
+]
+extend-ignore = [
+  "PLR",    # Design related pylint codes
+  "E501",   # Line too long
+  "PT004",  # Use underscore for non-returning fixture (use usefixture instead)
+  "B028",   # No explicit stacklevel
+  "EM101",  # Exception must not use a string literal
+  "EM102",  # Exception must not use an f-string literal
+]
+typing-modules = ["mypackage._compat.typing"]
+src = ["src"]
+unfixable = [
+  "T20",  # Removes print statements
+  "F841", # Removes unused variables
+]
+exclude = []
+flake8-unused-arguments.ignore-variadic-names = true
+extend-exclude = ["tests"]
+pydocstyle.convention = "numpy"
+isort.known-first-party = ["zse"]
+
+[tool.docformatter]
+pre-summary-newline = true
+black = true
+
+[tool.mypy]
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+no_implicit_optional = false
+disable_error_code = "annotation-unchecked"
