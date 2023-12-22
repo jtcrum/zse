@@ -1,9 +1,10 @@
-__all__ = ['isolated','paired']
+__all__ = ["isolated", "paired"]
 
 from zse.proton_utilities import *
 
-def isolated(atoms,index,code,path = None):
-    '''
+
+def isolated(atoms, index, code, path=None):
+    """
     Function to place a proton at each of the possible oxygens around a zeolite
     framework isolated T-site.
 
@@ -16,19 +17,19 @@ def isolated(atoms,index,code,path = None):
     OUTPUTS:
     traj:       (trajectory) Contains all the possible protonated structures.
     locations:  (list) Contains the location that correlates to each structure.
-    '''
+    """
 
     # first get all the oxygens and t sites needed
-    oxygens, silicons = get_os_and_ts(atoms,index)
+    oxygens, silicons = get_os_and_ts(atoms, index)
 
     # next add the proton to each oxygen
-    traj, locations = add_one_proton(atoms,index,oxygens,silicons,code,path)
+    traj, locations = add_one_proton(atoms, index, oxygens, silicons, code, path)
 
     return traj, locations
 
-def paired(atoms,indices,code,path = None):
 
-    '''
+def paired(atoms, indices, code, path=None):
+    """
     Function to enumerate all the possible proton locations at paired Al in a
     zeolite framework. This code won't work if the two Al are 1st nearest
     neighbor. Obey Löwenstein's rule for now I suppose.
@@ -42,17 +43,17 @@ def paired(atoms,indices,code,path = None):
     OUTPUTS:
     traj:       (trajectory) Contains all the possible protonated structures.
     locations:  (list) Contains the location that correlates to each structure.
-    '''
+    """
 
     # first get all the oxygens and silicons for each aluminum
     oxygens = []
     silicons = []
     for i in indices:
-        tmpo, tmps = get_os_and_ts(atoms,i)
+        tmpo, tmps = get_os_and_ts(atoms, i)
         oxygens.append(tmpo)
         silicons.append(tmps)
 
     # next add the protons to each possible oxygen, you will get 16 structures
-    traj, locations = add_two_protons(atoms,indices,oxygens,silicons,code,path)
+    traj, locations = add_two_protons(atoms, indices, oxygens, silicons, code, path)
 
     return traj, locations

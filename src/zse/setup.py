@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-    name="zeolite-simulation-environment-jcrum", # Replace with your own username
+    name="zeolite-simulation-environment-jcrum",  # Replace with your own username
     version="0.0.1",
     author="Jerry Crum",
     author_email="jcrum@nd.edu",
@@ -13,5 +13,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )
