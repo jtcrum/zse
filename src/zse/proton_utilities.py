@@ -1,6 +1,7 @@
 __all__ = ["get_os_and_ts", "add_one_proton", "add_two_protons"]
 
 import os
+from copy import deepcopy
 
 import numpy as np
 from ase import Atoms
@@ -11,7 +12,7 @@ from zse.utilities import *
 
 
 def get_os_and_ts(atoms, index):
-    lattice = atoms.copy()
+    lattice = deepcopy(atoms)
     total_oxygen = [atom.index for atom in lattice if atom.symbol == "O"]
     total_silicon = [atom.index for atom in lattice if atom.symbol == "Si"]
 
@@ -133,9 +134,7 @@ def add_two_protons(atoms, indices, oxygens, silicons, code, path=None):
             H_lattice.wrap()
 
             traj += [Atoms(H_lattice)]
-            locations.append(
-                f"{labels[oxygens[0][l]]}-{labels[oxygens[1][k]]}"
-            )
+            locations.append(f"{labels[oxygens[0][l]]}-{labels[oxygens[1][k]]}")
             if path:
                 os.makedirs(
                     f"{path}/D-{labels[oxygens[0][l]]}-{labels[oxygens[1][k]]}",

@@ -108,7 +108,6 @@ def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None)
     # let's import the modules we will need to make this work
     from ase.data import chemical_symbols, covalent_radii
 
-
     # I will use these radii to approximate bond lengths
     radii = {
         chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))

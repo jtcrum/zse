@@ -75,7 +75,6 @@ def fix_cif(cif):
 
 
 def get_tsites(cif):
-
     tsites = []
     tpos = []
     z, alllines = fix_cif(cif)
@@ -141,7 +140,6 @@ def get_tsites(cif):
 
 
 def get_osites(cif):
-
     osites = []
     opos = []
     z, alllines = fix_cif(cif)

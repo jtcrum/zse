@@ -20,6 +20,7 @@ This module contains utilities to be used by the rings.py module.
 
 import math
 from collections import defaultdict as dd
+from copy import deepcopy
 from itertools import permutations as perm
 
 import numpy as np
@@ -52,7 +53,7 @@ def atoms_to_graph(atoms, index, max_ring):
             repeat.append(re)
         else:
             repeat.append(1)
-    large_atoms = atoms.copy()
+    large_atoms = deepcopy(atoms)
     large_atoms = large_atoms.repeat(repeat)
     center = large_atoms.get_center_of_mass()
     trans = center - large_atoms.positions[index]
@@ -74,7 +75,7 @@ def atoms_to_graph(atoms, index, max_ring):
             delete.append(i)
     inds = [atom.index for atom in large_atoms]
     large_atoms.set_tags(inds)
-    atoms = large_atoms.copy()
+    atoms = deepcopy(large_atoms)
     del large_atoms[delete]
 
     matrix = np.zeros([len(large_atoms), len(large_atoms)]).astype(int)
@@ -127,7 +128,7 @@ def paths_to_atoms(atoms, paths):
             if j not in keepers:
                 keepers.append(j)
     d = [atom.index for atom in atoms if atom.index not in keepers]
-    tmp_atoms = atoms.copy()
+    tmp_atoms = deepcopy(atoms)
     del tmp_atoms[d]
 
     return tmp_atoms
@@ -167,7 +168,7 @@ def get_vertices(G, index):
 def shortest_valid_path(G, o1, o2, index, l):
     import networkx as nx
 
-    G2 = G.copy()
+    G2 = deepcopy(G)
     G2.remove_node(index)
     flag = True
     l2 = 6
@@ -210,7 +211,7 @@ def all_paths(G, o1, o2, index, l):
     import networkx as nx
 
     all_paths = []
-    G2 = G.copy()
+    G2 = deepcopy(G)
     G2.remove_node(index)
     paths = nx.all_simple_paths(G2, o1, o2, l)
     for path in paths:
@@ -468,7 +469,7 @@ def remove_non_rings(atoms, paths):
                 if outer_flag == False:
                     delete.append(j)
         if n % 2 != 0 and n > 5:
-            r2 = r.copy()
+            r2 = deepcopy(r)
             r2.append(r[:2])
             for x in range(1, n, 2):
                 dist1 = atoms.get_distance(r2[x], r2[x + n - 1], mic=True)
@@ -477,7 +478,7 @@ def remove_non_rings(atoms, paths):
                     delete.append(j)
                     break
 
-    tmp_paths = paths.copy()
+    tmp_paths = deepcopy(paths)
     paths = []
     for j, r in enumerate(tmp_paths):
         if j not in delete:

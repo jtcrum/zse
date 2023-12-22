@@ -1,5 +1,7 @@
 __all__ = ["tsub", "nest"]
 
+from copy import deepcopy
+
 from ase import neighborlist
 from ase.build import molecule
 
@@ -10,7 +12,7 @@ def tsub(atoms, index, new_atom):
     index is the index of the atom(s) you would like to substitute
     new_atom is the elemental symbol of the atom you want to replace index with.
     """
-    z = atoms.copy()
+    z = deepcopy(atoms)
     symbols = z.get_chemical_symbols()
     if isinstance(index, int):
         index = [index]
@@ -23,7 +25,7 @@ def tsub(atoms, index, new_atom):
 
 
 def nest(atoms, index):
-    z = atoms.copy()
+    z = deepcopy(atoms)
 
     position = z[index].position  # position of that t site
 

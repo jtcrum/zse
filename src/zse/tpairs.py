@@ -2,6 +2,7 @@ __all__ = ["get_pairs"]
 
 import math
 from collections import defaultdict
+from copy import deepcopy
 
 import numpy as np
 
@@ -68,7 +69,7 @@ def get_pairs(code, validation=None, max_ring=12):
                         newinds = []
                         for ti in tinds:
                             newinds.append(int(np.where(indices == ti)[1]))
-                        z3 = z.copy()
+                        z3 = deepcopy(z)
                         z3 = tsub(z3, newinds, "Al")
                         traj += [z3]
                         pair_list.append(pair_id)

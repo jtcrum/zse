@@ -6,6 +6,7 @@ ZSE. This is a work in progress, and more methods will be added.
 """
 
 from collections import defaultdict
+from copy import deepcopy
 
 import numpy as np
 
@@ -121,7 +122,7 @@ def cross_distance(atoms, paths):
                 if outer_flag == False:
                     delete.append(j)
         if n % 2 != 0 and n > 5:
-            r2 = r.copy()
+            r2 = deepcopy(r)
             r2.append(r[:2])
             for x in range(1, n, 2):
                 dist1 = atoms.get_distance(r2[x], r2[x + n - 1], mic=True)
@@ -130,7 +131,7 @@ def cross_distance(atoms, paths):
                     delete.append(j)
                     break
 
-    tmp_paths = paths.copy()
+    tmp_paths = deepcopy(paths)
     paths = []
     for j, r in enumerate(tmp_paths):
         if j not in delete:
@@ -293,7 +294,7 @@ def crum(G, paths, index_symbol):
                     l1 = len(p1)
                     l2 = len(p2)
                     if l1 < l2:
-                        G2 = G.copy()
+                        G2 = deepcopy(G)
                         for x in p1[1:-1]:
                             G2.remove_node(x)
                         sp = nx.shortest_path(G2, p1[0], p1[-1])
@@ -303,7 +304,7 @@ def crum(G, paths, index_symbol):
                         if len(con1) == l:
                             FLAG, q = is_valid(G, con1)
                     if l2 < l1:
-                        G2 = G.copy()
+                        G2 = deepcopy(G)
                         for x in p2[1:-1]:
                             G2.remove_node(x)
                         sp = nx.shortest_path(G2, p2[0], p2[-1])
@@ -313,7 +314,7 @@ def crum(G, paths, index_symbol):
                         if len(con1) == l:
                             FLAG, q = is_valid(G, con1)
                     if l1 == l2:
-                        G2 = G.copy()
+                        G2 = deepcopy(G)
                         sp = nx.shortest_path(G2, p1[0], p1[-1])
                         if len(sp) < l1:
                             FLAG = True
