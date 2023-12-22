@@ -156,7 +156,6 @@ def site_labels(atoms, code):
     zo_inds = [atom.index for atom in z if atom.symbol == "O"]
     zt_inds = [atom.index for atom in z if atom.symbol != "O"]
 
-    # z.set_tags(z_inds)
     poszo = z[zo_inds].get_scaled_positions()
     poszt = z[zt_inds].get_scaled_positions()
 
