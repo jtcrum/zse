@@ -1,4 +1,4 @@
-__all__ = ["get_os_and_ts", "add_one_proton", "add_two_protons"]
+from __future__ import annotations
 
 import os
 from copy import deepcopy
@@ -8,7 +8,7 @@ from ase import Atoms
 from ase.build import molecule
 from ase.io import write
 
-from zse.utilities import *
+from zse.utilities import site_labels
 
 
 def get_os_and_ts(atoms, index):
@@ -43,7 +43,6 @@ def add_one_proton(atoms, index, oxygens, silicons, code, path=None):
     adsorbate.translate([0, 0, 0])
     H_lattice = atoms + adsorbate
 
-    cwd = os.getcwd()
     traj = []
     locations = []
     for l in range(4):
@@ -82,11 +81,9 @@ def add_one_proton(atoms, index, oxygens, silicons, code, path=None):
 def add_two_protons(atoms, indices, oxygens, silicons, code, path=None):
     labels = site_labels(atoms, code)
 
-    hydrogen = [len(atoms), len(atoms) + 1]
     adsorbate = molecule("H")
     H_lattice = atoms + adsorbate + adsorbate
 
-    cwd = os.getcwd()
     locations = []
     traj = []
     for l in range(4):
@@ -95,16 +92,6 @@ def add_two_protons(atoms, indices, oxygens, silicons, code, path=None):
         diff = center - positions[indices[0]]
         H_lattice.translate(diff)
         H_lattice.wrap()
-        first_distance = H_lattice.set_distance(oxygens[0][l], hydrogen[0], 0.98, fix=0)
-        first_Al_angle = H_lattice.set_angle(
-            int(indices[0]), oxygens[0][l], hydrogen[0], 109.6, mask=None
-        )
-        first_Si_angle = H_lattice.set_angle(
-            int(silicons[0][l]), oxygens[0][l], hydrogen[0], 109.6, mask=None
-        )
-        first_dihedral = H_lattice.set_dihedral(
-            int(indices[0]), oxygens[0][l], silicons[0][l], hydrogen[0], 180, mask=None
-        )
         H_lattice.translate(-1 * diff)
         H_lattice.wrap()
         for k in range(4):
@@ -113,23 +100,6 @@ def add_two_protons(atoms, indices, oxygens, silicons, code, path=None):
             diff = center - positions[indices[1]]
             H_lattice.translate(diff)
             H_lattice.wrap()
-            second_distance = H_lattice.set_distance(
-                oxygens[1][k], hydrogen[1], 0.98, fix=0
-            )
-            second_Al_angle = H_lattice.set_angle(
-                int(indices[1]), oxygens[1][k], hydrogen[1], 109.6, mask=None
-            )
-            second_Si_angle = H_lattice.set_angle(
-                int(silicons[1][k]), oxygens[1][k], hydrogen[1], 109.6, mask=None
-            )
-            second_dihedral = H_lattice.set_dihedral(
-                int(indices[1]),
-                oxygens[1][k],
-                silicons[1][k],
-                hydrogen[1],
-                180,
-                mask=None,
-            )
             H_lattice.translate(-1 * diff)
             H_lattice.wrap()
 

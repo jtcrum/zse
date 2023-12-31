@@ -1,4 +1,4 @@
-__all__ = ["get_pairs"]
+from __future__ import annotations
 
 import math
 from collections import defaultdict
@@ -6,17 +6,17 @@ from copy import deepcopy
 
 import numpy as np
 
-from zse.collections import *
-from zse.ring_utilities import *
-from zse.rings import *
-from zse.substitute import *
-from zse.utilities import *
+from zse.collections.framework import get_framework
+from zse.ring_utilities import atoms_to_graph
+from zse.rings import get_unique_rings
+from zse.substitute import tsub
+from zse.utilities import get_tsites, site_labels
 
 
 def get_pairs(code, validation=None, max_ring=12):
-    z = framework(code)
+    z = get_framework(code)
     tinds = get_tsites(code)[2]
-    c, r, ra, a = get_unique_rings(z, tinds, validation=validation, max_ring=max_ring)
+    c, r, _, a = get_unique_rings(z, tinds, validation=validation, max_ring=max_ring)
     lr = defaultdict(list)
     tr = defaultdict(list)
 
@@ -39,11 +39,10 @@ def get_pairs(code, validation=None, max_ring=12):
     for r in sorted(tr):
         for nn in range(2, math.floor(r / 2) + 1):
             for q, trs in enumerate(tr[r]):
-                tlist = []
                 pair_list = []
                 tp = trs + trs
                 lp = lr[r][q] + lr[r][q]
-                z = framework(code)
+                z = get_framework(code)
                 repeat = atoms_to_graph(z, tp[0], max_ring)[2]
                 z2 = z.repeat(repeat)
                 for i in range(1, len(trs) - nn, 2):

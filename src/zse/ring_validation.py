@@ -1,17 +1,16 @@
-__all__ = ["sp", "vertex", "sastre", "crum", "sphere", "cross_distance", "goetzke"]
-
 """
 This module contains all the various ring validation techniques implemented by
 ZSE. This is a work in progress, and more methods will be added.
 """
+from __future__ import annotations
 
 from collections import defaultdict
 from copy import deepcopy
 
 import numpy as np
 
-from zse.ring_utilities import *
-from zse.utilities import *
+from zse.ring_utilities import is_valid, shortest_valid_path
+from zse.utilities import scale_cell
 
 
 def sp(G, paths):
@@ -280,7 +279,7 @@ def crum(G, paths, index_symbol):
         start = 1
     else:
         start = 0
-    lengths = [len(p) for p in paths]
+
     valid_paths = []
     for path in paths:
         FLAG = False
@@ -302,7 +301,7 @@ def crum(G, paths, index_symbol):
                         if len(con1) < l:
                             FLAG = True
                         if len(con1) == l:
-                            FLAG, q = is_valid(G, con1)
+                            FLAG, _ = is_valid(G, con1)
                     if l2 < l1:
                         G2 = deepcopy(G)
                         for x in p2[1:-1]:
@@ -312,7 +311,7 @@ def crum(G, paths, index_symbol):
                         if len(con1) < l:
                             FLAG = True
                         if len(con1) == l:
-                            FLAG, q = is_valid(G, con1)
+                            FLAG, _ = is_valid(G, con1)
                     if l1 == l2:
                         G2 = deepcopy(G)
                         sp = nx.shortest_path(G2, p1[0], p1[-1])

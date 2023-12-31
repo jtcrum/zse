@@ -2,12 +2,32 @@
 This module contains general utilities
 to be used by other functions in ZSE.
 """
+from __future__ import annotations
 
-__all__ = ["site_labels", "get_osites", "get_tsites", "scale_cell", "center"]
+from typing import TYPE_CHECKING
 
 import numpy as np
+from ase.geometry import get_distances
 
-from zse.collections import framework
+from zse.collections.framework import get_framework
+from zse.collections.framework import get_osites as get_osites_
+from zse.collections.framework import get_tsites as get_tsites_
+
+if TYPE_CHECKING:
+    from ase.atoms import Atoms
+
+
+def make_iza_zeolite(code: str) -> Atoms:
+    """
+    Make an idealized zeolite from an IZA code, populate the atoms.info
+    dictionary with the framework name, and add a labels array to the
+    atoms object.
+    """
+    zeolite = get_framework(code)
+    labels = site_labels(zeolite, code)
+    zeolite.set_array("labels", np.array(list(labels.values())))
+    zeolite.info["framework"] = code
+    return zeolite
 
 
 def center(atoms, index):
@@ -22,38 +42,34 @@ def center(atoms, index):
 
 
 def get_osites(code: str):
-    from zse.collections.framework import get_osites
-
-    z = framework(code)
-    osites, omult = get_osites(code)
+    z = get_framework(code)
+    osites, omult = get_osites_(code)
     oinds = [atom.index for atom in z if atom.symbol == "O"]
     index = 0
     first_os = []
-    for i, m in enumerate(omult):
+    for _, m in enumerate(omult):
         first_os.append(oinds[index])
         index += m
     return osites, omult, first_os
 
 
 def get_tsites(code, T_atoms: list[str] = None):
-    from zse.collections.framework import get_tsites
-
     if not T_atoms:
         T_atoms = ["Si", "Al"]
-    z = framework(code)
-    tsites, tmult = get_tsites(code)
+    z = get_framework(code)
+    tsites, tmult = get_tsites_(code)
     tinds = [atom.index for atom in z if atom.symbol in T_atoms]
     index = 0
     first_ts = []
-    for i, m in enumerate(tmult):
+    for _, m in enumerate(tmult):
         first_ts.append(tinds[index])
         index += m
     return tsites, tmult, first_ts
 
 
 def label_osites(atoms, code):
-    z = framework(code)
-    osites, omult, first = get_osites(code)
+    z = get_framework(code)
+    osites, omult, _ = get_osites(code)
 
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
@@ -67,9 +83,9 @@ def label_osites(atoms, code):
     rp = np.prod(repeat)
     Dict = {}
     j = 0
-    for i in range(rp):
+    for _ in range(rp):
         for s, t in enumerate(osites):
-            for q in range(omult[s]):
+            for _ in range(omult[s]):
                 Dict[oinds[j]] = t
                 j += 1
 
@@ -77,8 +93,8 @@ def label_osites(atoms, code):
 
 
 def label_tsites(atoms, code):
-    z = framework(code)
-    tsites, tmult, first = get_tsites(code)
+    z = get_framework(code)
+    tsites, tmult, _ = get_tsites(code)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
 
     zcell = z.cell.cellpar()[:3]
@@ -92,9 +108,9 @@ def label_tsites(atoms, code):
     rp = np.prod(repeat)
     Dict = {}
     j = 0
-    for i in range(rp):
+    for _ in range(rp):
         for s, t in enumerate(tsites):
-            for q in range(tmult[s]):
+            for _ in range(tmult[s]):
                 Dict[tinds[j]] = t
                 j += 1
 
@@ -102,8 +118,6 @@ def label_tsites(atoms, code):
 
 
 def scale_cell(atoms):
-    from ase.geometry import get_distances
-
     diff = 1
     sil = 3.1
     mult = 1
@@ -145,7 +159,7 @@ def site_labels(atoms, code):
     odict = label_osites(atoms, code)
     all_labels = {**tdict, **odict}
 
-    z = framework(code)
+    z = get_framework(code)
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []

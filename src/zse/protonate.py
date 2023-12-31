@@ -1,6 +1,6 @@
-__all__ = ["isolated", "paired"]
+from __future__ import annotations
 
-from zse.proton_utilities import *
+from zse.proton_utilities import add_one_proton, add_two_protons, get_os_and_ts
 
 
 def isolated(atoms, index, code, path=None):

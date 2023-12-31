@@ -1,16 +1,14 @@
-__all__ = ["divalent", "monovalent"]
+from __future__ import annotations
 
 import os
-import os.path
 
 import numpy as np
 from ase import Atoms
 from ase.io import write
 
-from zse.cation_utilities import *
-from zse.ring_utilities import *
-from zse.rings import *
-from zse.utilities import *
+from zse.cation_utilities import add_cation, count_rings
+from zse.rings import get_rings
+from zse.utilities import center
 
 
 def divalent(atoms, M, path=None):
@@ -30,7 +28,6 @@ def divalent(atoms, M, path=None):
 
     total_oxygen = [atom.index for atom in atoms if atom.symbol == "O"]
     aluminum = [atom.index for atom in atoms if atom.symbol == "Al"]
-    cation = [len(atoms)]
 
     oxygens = []
     for j in aluminum:

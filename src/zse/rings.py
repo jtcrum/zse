@@ -7,21 +7,34 @@ include what types are rings are possible in that framework. This information is
 stored within the collections module of this package. Check the examples page on
 github (github.com/jtcrum/zse/examples) for specifics on how to use.
 """
+from __future__ import annotations
 
-__all__ = [
-    "get_orings",
-    "get_trings",
-    "get_fwrings",
-    "get_vertex_symbols",
-    "get_rings",
-    "get_unique_rings",
-    "get_ordered_vertex",
-]
+import warnings
 
-from zse.collections import framework, get_ring_sizes
-from zse.ring_utilities import *
-from zse.ring_validation import *
-from zse.utilities import *
+from zse.collections.framework import get_framework, get_ring_sizes
+from zse.ring_utilities import (
+    all_paths,
+    atoms_to_graph,
+    dict_to_atoms,
+    get_paths,
+    get_vertices,
+    paths_to_atoms,
+    remove_dups,
+    remove_geometric_dups,
+    remove_labeled_dups,
+    shortest_valid_path,
+    vertex_order,
+)
+from zse.ring_validation import (
+    cross_distance,
+    crum,
+    goetzke,
+    sastre,
+    sp,
+    sphere,
+    vertex,
+)
+from zse.utilities import center, get_osites, site_labels
 
 
 def get_rings(atoms, index, validation=None, max_ring=12):
@@ -64,7 +77,7 @@ def get_rings(atoms, index, validation=None, max_ring=12):
     # remove some cycles based on other validation rules
     if validation == "vertex":
         if index_symbol == "O":
-            print("WARNING: Can't find vertex symbols of oxygen atoms")
+            warnings.warn("WARNING: Can't find vertex symbols of oxygen atoms")
             return False, False, False, False
         else:
             paths = vertex(paths)
@@ -202,7 +215,7 @@ def get_ordered_vertex(atoms, index, max_ring=12):
         for x in path:
             if x not in keep:
                 keep.append(x)
-    atoms, vect = center(atoms, keep[0])
+    atoms, _ = center(atoms, keep[0])
     atoms = atoms[keep]
 
     return ordered_vertex, paths, ring_atoms, atoms
@@ -244,7 +257,7 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
 
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph
-    G, large_atoms, repeat = atoms_to_graph(atoms, index, max_ring)
+    G, large_atoms, _ = atoms_to_graph(atoms, index, max_ring)
     index = [atom.index for atom in large_atoms if atom.tag == index][0]
 
     # get the closest neighbor of the oxygen, and find all possible rings
@@ -341,10 +354,11 @@ def get_trings(atoms, index, code, validation="cross_distance", cutoff=3.15):
     if validation == "sp":
         paths = sp(G, paths)
     if validation == "d2":
-        paths = d2(G, paths)
+        raise ValueError("d2 validation not implemented")
+        # paths = d2(G, paths)
     if validation == "sphere":
         if cutoff == None:
-            print(
+            raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
             return None
@@ -387,9 +401,9 @@ def get_fwrings(code, validation="cross_distance", cutoff=3.15):
 
     # First, get some basic info we will need about the framework
     # atoms object, possible ring sizes, and the index of each o-site type
-    atoms = framework(code)
+    atoms = get_framework(code)
     ring_sizes = get_ring_sizes(code)
-    osites, omults, oinds = get_osites(code)
+    _, _, oinds = get_osites(code)
 
     # now we find all the rings associated with each oxygen type in the fw
     # this in theory should find us every possible type of ring in the fw
@@ -450,7 +464,7 @@ def get_vertex_symbols(code, index):
     max_ring = max(ring_sizes)
 
     # get an atoms object of the framework
-    atoms = framework(code)
+    atoms = get_framework(code)
 
     # repeat the unit cell so it is large enough to capture the max ring size
     # also turn this new larger unit cell into a graph

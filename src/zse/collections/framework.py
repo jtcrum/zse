@@ -1,31 +1,13 @@
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-import numpy as np
 import pkg_resources
 from ase.db import connect
 
-from zse.utilities import site_labels
-
-if TYPE_CHECKING:
-    from ase.atoms import Atoms
 path = "frameworks.db"
 filepath = pkg_resources.resource_filename(__name__, path)
 
 
-def make_iza_zeolite(code: str) -> Atoms:
-    """
-    Make an idealized zeolite from an IZA code, populate the atoms.info
-    dictionary with the framework name, and add a labels array to the
-    atoms object.
-    """
-    zeolite = framework(code)
-    labels = site_labels(zeolite, code)
-    zeolite.set_array("labels", np.array(list(labels.values())))
-    zeolite.info["framework"] = code
-    return zeolite
-
-
-def framework(code):
+def get_framework(code):
     db = connect(filepath)
     atoms = db.get_atoms(fw=code)
     return atoms

@@ -1,4 +1,4 @@
-__all__ = ["tsub", "nest"]
+from __future__ import annotations
 
 from copy import deepcopy
 from typing import TYPE_CHECKING
@@ -8,7 +8,6 @@ from ase.atoms import Atoms
 from ase.build import molecule
 
 from zse.cation import monovalent
-from zse.substitute import get_ratio, tsub
 from zse.t_utilities import get_min_T_distance, get_ratio, get_T_info
 
 if TYPE_CHECKING:
