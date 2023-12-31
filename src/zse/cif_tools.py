@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import warnings
 
 import numpy as np
 import pkg_resources
