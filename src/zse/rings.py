@@ -265,7 +265,6 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
         paths = sp(G, paths)
     elif validation == "d2":
         raise ValueError("d2 validation not implemented")
-        # paths = d2(G, paths)
     elif validation == "sphere":
         if cutoff is None:
             raise ValueError(
@@ -347,7 +346,6 @@ def get_trings(atoms, index, code, validation="cross_distance", cutoff=3.15):
         paths = sp(G, paths)
     elif validation == "d2":
         raise ValueError("d2 validation not implemented")
-        # paths = d2(G, paths)
     elif validation == "sphere":
         if cutoff is None:
             raise ValueError(
