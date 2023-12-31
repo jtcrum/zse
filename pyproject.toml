@@ -24,7 +24,7 @@ classifiers = [
     "Operating System :: MacOS",
 ]
 requires-python = ">=3.9, <3.13"
-dependencies = ["ase"]
+dependencies = ["ase", "numpy"]
 
 [tool.setuptools.package-data]
 zse = ["py.typed"]
