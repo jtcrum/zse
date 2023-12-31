@@ -7,16 +7,9 @@ Updated by: Andrew S. Rosen
 * Description
 This is a package to automate zeolite structure generation and characterization for computational chemistry.
 
-* Requirements
-This package is built around the ASE atoms object, and thus requires installation of ASE, available at: https://wiki.fysik.dtu.dk/ase/install.html.
-
-Ring finding uses graph theory implemented by NetworkX, available at: https://networkx.github.io.
-
-Numpy is also required.
-
 * Installation
 
-Clone this git repository into your PYTHONPATH (i.e. anaconda3/lib/python3.X/site-packages/), and you are good to go. Also, you can clone this git repository anywhere you want, and then add the location to your PYTHONPATH.
+`pip install git+https://github.com/Andrew-S-Rosen/zse.git`
 
 * Current Modules
 To see how to use each of the modules, please visit [[/examples][examples]].
@@ -28,11 +21,9 @@ To see how to use each of the modules, please visit [[/examples][examples]].
 - zse.substitute
 - zse.tpairs
 - zse.utilities
-* Contributions
-
-If there is something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
 
 * Acknowledgments
+
 ** Contributors
 
 Sichi Li, Craig Waitt, Yujia Wang, William Schneider
@@ -40,12 +31,15 @@ Sichi Li, Craig Waitt, Yujia Wang, William Schneider
 ** Testers
 
 Jian Ren Lim, Elsa Koninckx
+
 ** Funding Sources
 - [[https://cistar.us][Center for Innovative and Strategic Transformation of Alkane Resources]]
 - [[https://www.nsf.gov/awardsearch/showAward?AWD_ID=1922173&HistoricalAwards=false][Designing Materials to Revolutionize and Engineer our Future]]
 - [[https://graduateschool.nd.edu/graduate-training/leadership/society-of-schmitt-fellows/][Arthur J. Schmitt Leadership Fellowship]]
+
 ** Computational Resources
 This research was supported in part by the Notre Dame [[https://docs.crc.nd.edu/index.html][Center for Research Computing]] through access to the HPC clusters.
+
 ** Research Group
 Many thanks to all the members of the [[https://wfschneidergroup.github.io][Schneider Group]] who listened to me present this material over and over again, and provided input into how to make ZSE more useful. 
 
