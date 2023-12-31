@@ -56,5 +56,4 @@ def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str]) -> float:
     if len(heteroatom_sites) > 1:
         heteroatom_positions = atoms[heteroatom_sites].get_all_distances(mic=True)
         return np.min(heteroatom_positions[heteroatom_positions > 0])
-    else:
-        return np.inf
+    return np.inf
