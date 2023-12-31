@@ -1,7 +1,7 @@
 """Scattered utilities for Andrew Rosen's zeolite projects."""
 from __future__ import annotations
 from copy import deepcopy
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 from ase.atoms import Atoms
@@ -14,6 +14,9 @@ from zse.cation import monovalent
 from zse.collections import framework
 from zse.substitute import tsub
 from zse.utilities import site_labels
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 def make_iza_zeolite(code: str) -> Atoms:
