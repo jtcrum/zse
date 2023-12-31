@@ -1,16 +1,26 @@
-from ase.io import read
+from pathlib import Path
+
+from ase.io import read, write
 
 from zse.substitute import exchange_unique_T_sites
 from zse.utilities import make_iza_zeolite
 
+REF_DATA = Path("data").resolve()
 
-def test_all_silica():
+
+def test_all_silica(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
     atoms = make_iza_zeolite("CHA")
-    assert atoms == read("data/CHA.cif")
+    write("CHA.cif", atoms)
+
+    assert read("CHA.cif") == read(f"{REF_DATA}/CHA.cif")
 
 
-def test_exchange_unique():
-    zeolite = read(f"MOR.cif")
+def test_exchange_unique(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
+    zeolite = read(f"{REF_DATA}/CHA.cif")
     exchanged_zeolites = exchange_unique_T_sites(zeolite, "CHA", "B", "Na")
     assert len(exchanged_zeolites) == 4
-    assert exchanged_zeolites[0] == read("data/MOR_B_Na_1.cif")
+    write("CHA_B_Na_3.cif", exchanged_zeolites[3])
+    assert read("CHA_B_Na_3.cif") == read(f"{REF_DATA}/MOR_B_Na_3.cif")
