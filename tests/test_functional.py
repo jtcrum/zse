@@ -5,7 +5,7 @@ from ase.io import read, write
 from zse.substitute import exchange_unique_T_sites
 from zse.utilities import make_iza_zeolite
 
-REF_DATA = Path("data").resolve()
+REF_DATA = Path(__file__, "data")
 
 
 def test_all_silica(monkeypatch, tmp_path):
