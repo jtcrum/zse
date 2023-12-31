@@ -9,7 +9,7 @@ This is a package to automate zeolite structure generation and characterization 
 
 * Installation
 
-`pip install git+https://github.com/Andrew-S-Rosen/zse.git`
+pip install git+https://github.com/Andrew-S-Rosen/zse.git
 
 * Current Modules
 To see how to use each of the modules, please visit [[/examples][examples]].
