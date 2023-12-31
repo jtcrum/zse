@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from pymatgen.core.structure import Structure
 
 
-def get_soap_distances(
+def get_soap_distance_matrix(
     atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6
 ) -> np.ndarray:
     """
