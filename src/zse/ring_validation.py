@@ -108,7 +108,7 @@ def cross_distance(atoms, paths):
                     delete.append(j)
                     inner_flag = True
                     break
-            if inner_flag == False:
+            if inner_flag is False:
                 outer_flag = any(d > n - math.floor(n / 6) for d in distances)
                 if not outer_flag:
                     delete.append(j)
