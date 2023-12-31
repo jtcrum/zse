@@ -2,6 +2,7 @@
 [[./examples/figures/zse_logo.jpeg]]
 * Zeolite Simulation Environment
 Authors: Jerry T. Crum, Justin R. Crum \\
+Updated by: Andrew S. Rosen
 
 * Description
 This is a package to automate zeolite structure generation and characterization for computational chemistry.
