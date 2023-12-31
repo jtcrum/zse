@@ -1,5 +1,6 @@
 """Scattered utilities for Andrew Rosen's zeolite projects."""
 from __future__ import annotations
+
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -103,7 +104,9 @@ def get_min_heteroatom_distance(atoms: Atoms, heteroatom: str) -> float:
     return min_dist
 
 
-def get_soap_distances(atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6) -> np.ndarray:
+def get_soap_distances(
+    atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6
+) -> np.ndarray:
     """
     Get the SOAP distance between all heteroatom pairs in a zeolite.
     """
@@ -112,9 +115,9 @@ def get_soap_distances(atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax
     soap = SOAP(
         species=list(set(atoms.get_chemical_symbols())),
         periodic=True,
-        rcut=6.0,
-        nmax=8,
-        lmax=6,
+        rcut=rcut,
+        nmax=nmax,
+        lmax=lmax,
     )
     soap_values = soap.create(atoms, centers=indices)
     pairwise_distances = pdist(soap_values, "euclidean")
