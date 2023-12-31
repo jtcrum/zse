@@ -270,7 +270,6 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
             raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
-            return None
         paths = sphere(large_atoms, paths, cutoff)
     elif validation == "cross_distance":
         paths = cross_distance(large_atoms, paths)
