@@ -103,14 +103,14 @@ def get_min_heteroatom_distance(atoms: Atoms, heteroatom: str) -> float:
     return min_dist
 
 
-def get_soap_distances(atoms: Atoms, indices: list[int]) -> np.NDArray:
+def get_soap_distances(atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6) -> np.ndarray:
     """
     Get the SOAP distance between all heteroatom pairs in a zeolite.
     """
     from dscribe.descriptors import SOAP
 
     soap = SOAP(
-        species=["Na", "Si", "O", "B"],
+        species=list(set(atoms.get_chemical_symbols())),
         periodic=True,
         rcut=6.0,
         nmax=8,
@@ -121,21 +121,12 @@ def get_soap_distances(atoms: Atoms, indices: list[int]) -> np.NDArray:
     return squareform(pairwise_distances)
 
 
-def find_identical_sites(X: np.NDArray, tol: float = 1e-4):
+def find_unique_samples(X: np.ndarray, tol: float = 1e-4):
     """
-    Find identical sites in a distance matrix.
+    Find unique samples in a square distance matrix.
+
+    TODO.
     """
-    n_samples = X.shape[0]
-    identical_samples = set()
-
-    for i in range(n_samples):
-        for j in range(i + 1, n_samples):
-            distance = X[i, j]
-            if distance < X:
-                identical_samples.add(i)
-                identical_samples.add(j)
-
-    return list(identical_samples)
 
 
 def exchange_unique_T_sites(
