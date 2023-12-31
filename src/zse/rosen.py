@@ -86,11 +86,13 @@ def get_T_info(
     return T_info
 
 
-def get_min_heteroatom_distance(atoms: Atoms, heteroatom: str) -> float:
+def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str]) -> float:
     """
     Get the minimum distance between all heteroatom pairs in a zeolite.
     """
-    heteroatom_sites = [atom.index for atom in atoms if atom.symbol == heteroatom]
+    if isinstance(T_symbols, str):
+        T_symbols = [T_symbols]
+    heteroatom_sites = [atom.index for atom in atoms if atom.symbol in T_symbols]
     if len(heteroatom_sites) > 1:
         heteroatom_positions = atoms[heteroatom_sites].get_all_distances(mic=True)
         return np.min(heteroatom_positions[heteroatom_positions > 0])
@@ -177,7 +179,7 @@ def exchange_unique_T_sites(
             exchanged_zeolite.info["cation"] = cation
 
             if min_heteroatom_dist:
-                min_dist = get_min_heteroatom_distance(exchanged_zeolite, heteroatom)
+                min_dist = get_min_T_distance(exchanged_zeolite, heteroatom)
                 if min_dist < min_heteroatom_dist:
                     continue
             zeolites.append(exchanged_zeolite)
