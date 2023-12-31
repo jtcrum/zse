@@ -13,11 +13,11 @@ def count_rings(paths):
     Class.sort(reverse=True)
 
     class_count = []
-    for i in range(len(Class)):
+    for i, item in enumerate(Class):
         if i == 0:
             class_count.append(1)
         else:
-            counter = 1 + sum(bool(Class[i] == Class[j]) for j in range(i))
+            counter = 1 + sum(bool(item == Class[j]) for j in range(i))
             class_count.append(counter)
 
     return Class, class_count, paths
@@ -37,8 +37,7 @@ def add_cation(
 ):
     traj = []
     locations = []
-    for i in range(len(paths)):
-        p = paths[i]
+    for i, p in enumerate(paths):
         if len(p) in included_rings:
             trans = atoms[index].position - large_atoms[index].position
             positions = large_atoms[p].positions
