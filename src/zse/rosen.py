@@ -6,10 +6,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from ase.atoms import Atoms
-from pymatgen.analysis.structure_matcher import StructureMatcher
-from pymatgen.core import Structure
-from pymatgen.io.ase import AseAtomsAdaptor
-from scipy.spatial.distance import pdist, squareform
 
 from zse.cation import monovalent
 from zse.collections import framework
@@ -32,16 +28,6 @@ def make_iza_zeolite(code: str) -> Atoms:
     zeolite.info["framework"] = code
     return zeolite
 
-
-def get_unique_structures(zeolites: list[Atoms]) -> list[Structure] | list[Atoms]:
-    """
-    Get a unique list of structures from a list of Atoms objects.
-    """
-    structures = [AseAtomsAdaptor().get_structure(atoms) for atoms in zeolites]
-    unique_structures = [s[0] for s in StructureMatcher().group_structures(structures)]
-    return unique_structures
-
-
 def get_ratio(atoms: Atoms, heteroatom: str, offset: int = 0) -> float:
     """
     Calculate the Si/heteroatom ratio of a zeolite.
@@ -52,7 +38,7 @@ def get_ratio(atoms: Atoms, heteroatom: str, offset: int = 0) -> float:
     return n_Si / n_heteroatom
 
 
-def prep_labels(d: dict, labels: list[Any]) -> None:
+def _prep_labels(d: dict, labels: list[Any]) -> None:
     """
     Prepare the atoms.info entries
     """
@@ -99,34 +85,6 @@ def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str]) -> float:
     else:
         return np.inf
 
-def get_soap_distances(
-    atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6
-) -> np.ndarray:
-    """
-    Get the SOAP distance between all specified indices in a zeolite.
-    """
-    from dscribe.descriptors import SOAP
-
-    soap = SOAP(
-        species=list(set(atoms.get_chemical_symbols())),
-        periodic=True,
-        rcut=rcut,
-        nmax=nmax,
-        lmax=lmax,
-    )
-    soap_values = soap.create(atoms, centers=indices)
-    pairwise_distances = pdist(soap_values, "euclidean")
-    return squareform(pairwise_distances)
-
-
-def find_unique_samples(X: np.ndarray, tol: float = 1e-4):
-    """
-    Find unique samples in a square distance matrix.
-
-    TODO.
-    """
-
-
 def exchange_unique_T_sites(
     zeolite: Atoms,
     code: str,
@@ -158,7 +116,7 @@ def exchange_unique_T_sites(
         for j, exchanged_zeolite_ in enumerate(exchanged_zeolites):
             exchanged_zeolite = deepcopy(exchanged_zeolite_)
 
-            prep_labels(
+            _prep_labels(
                 exchanged_zeolite.info,
                 [
                     "heteroatom_T_sites",
