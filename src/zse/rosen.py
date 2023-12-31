@@ -103,7 +103,7 @@ def get_soap_distances(
     atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6
 ) -> np.ndarray:
     """
-    Get the SOAP distance between all heteroatom pairs in a zeolite.
+    Get the SOAP distance between all specified indices in a zeolite.
     """
     from dscribe.descriptors import SOAP
 
