@@ -187,7 +187,7 @@ def get_ordered_vertex(atoms, index, max_ring=12):
 
     # remove some cycles based on other validation rules
     if index_symbol == "O":
-        print("WARNING: Can't find vertex symbols of oxygen atoms")
+        warnings.warn("WARNING: Can't find vertex symbols of oxygen atoms")
         return False, False, False, False
     else:
         paths = vertex(paths)
@@ -265,16 +265,17 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
     # to eliminate non ring paths
     if validation == "sp":
         paths = sp(G, paths)
-    if validation == "d2":
-        paths = d2(G, paths)
-    if validation == "sphere":
+    elif validation == "d2":
+        raise ValueError("d2 validation not implemented")
+        # paths = d2(G, paths)
+    elif validation == "sphere":
         if cutoff is None:
-            print(
+            raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
             return None
         paths = sphere(large_atoms, paths, cutoff)
-    if validation == "cross_distance":
+    elif validation == "cross_distance":
         paths = cross_distance(large_atoms, paths)
 
     # finally organize all outputs: list of ring sizes, atom indices that make
@@ -346,16 +347,16 @@ def get_trings(atoms, index, code, validation="cross_distance", cutoff=3.15):
     # valid rings is designated with the validation input variable.
     if validation == "sp":
         paths = sp(G, paths)
-    if validation == "d2":
+    elif validation == "d2":
         raise ValueError("d2 validation not implemented")
         # paths = d2(G, paths)
-    if validation == "sphere":
+    elif validation == "sphere":
         if cutoff is None:
             raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
         paths = sphere(large_atoms, paths, cutoff)
-    if validation == "cross_distance":
+    elif validation == "cross_distance":
         paths = cross_distance(large_atoms, paths)
 
     # finally organize all outputs: list of ring sizes, atom indices that make
