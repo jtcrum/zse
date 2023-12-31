@@ -11,7 +11,7 @@ This is a fork of the [original ZSE package](https://github.com/jtcrum/zse) by J
 ## Installation
 
 ```bash
-pip install git+https://github.com/Andrew-S-Rosen/zse.git
+pip install git+https://github.com/Quantum-Accelerators/zse.git
 ```
 
 ## Authors
