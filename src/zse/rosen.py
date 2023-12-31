@@ -90,19 +90,12 @@ def get_min_heteroatom_distance(atoms: Atoms, heteroatom: str) -> float:
     """
     Get the minimum distance between all heteroatom pairs in a zeolite.
     """
-    min_dist = np.inf
     heteroatom_sites = [atom.index for atom in atoms if atom.symbol == heteroatom]
     if len(heteroatom_sites) > 1:
-        heteroatom_positions = atoms[heteroatom_sites].get_positions()
-        for i in range(len(heteroatom_positions)):
-            for j in range(i + 1, len(heteroatom_positions)):
-                distance = atoms.get_distance(
-                    heteroatom_sites[i], heteroatom_sites[j], mic=True
-                )
-                if distance < min_dist:
-                    min_dist = distance
-    return min_dist
-
+        heteroatom_positions = atoms[heteroatom_sites].get_all_distances(mic=True)
+        return np.min(heteroatom_positions[heteroatom_positions > 0])
+    else:
+        return np.inf
 
 def get_soap_distances(
     atoms: Atoms, indices: list[int], rcut: float = 6.0, nmax: int = 8, lmax: int = 6
