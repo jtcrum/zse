@@ -74,8 +74,6 @@ def atoms_to_graph(atoms, index, max_ring):
         for o in idx:
             matrix[t, osites[o]] = 1
             matrix[osites[o], t] = 1
-    # now we make the graph
-    import networkx as nx
 
     G = nx.from_numpy_array(matrix)
     # G.remove_nodes_from(delete)
@@ -87,10 +85,10 @@ def remove_dups(paths):
     This is a helper function for get_orings and get_trings.
     """
     d = []
-    for i in range(len(paths)):
+    for i, item in enumerate(paths):
         for j in range((i + 1), len(paths)):
             if i != j:
-                st1 = set(paths[i])
+                st1 = set(item)
                 st2 = set(paths[j])
                 if st1 == st2:
                     d.append(int(j))
@@ -140,8 +138,6 @@ def get_vertices(G, index):
 
 
 def shortest_valid_path(G, o1, o2, index, l):
-    import networkx as nx
-
     G2 = deepcopy(G)
     G2.remove_node(index)
     flag = True
@@ -164,8 +160,6 @@ def shortest_valid_path(G, o1, o2, index, l):
 
 
 def is_valid(G, path):
-    import networkx as nx
-
     l = len(path)
     flag = False
     for j in range(1, l - 1, 2):
@@ -278,9 +272,9 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
         ring_tlist = label_rings[length]
         ring_full = index_rings[length]
         d = []
-        for i in range(len(ring_tlist)):
+        for i, item in enumerate(ring_tlist):
             for j in range((i + 1), len(ring_tlist)):
-                st1 = " ".join(map(str, ring_tlist[i]))
+                st1 = " ".join(map(str, item))
                 st2 = " ".join(map(str, ring_tlist[j]))
                 st2_2 = " ".join(map(str, reversed(ring_tlist[j])))
                 if st2 in f"{st1} {st1}" or st2_2 in f"{st1} {st1}":
@@ -306,9 +300,9 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
                         d.append(int(j))
         tmp1 = []
         tmp2 = []
-        for i in range(len(ring_tlist)):
+        for i, item in enumerate(ring_tlist):
             if i not in d:
-                tmp1.append(ring_tlist[i])
+                tmp1.append(item)
                 tmp2.append(ring_full[i])
         label_rings[length] = tmp1
         index_rings[length] = tmp2
@@ -320,9 +314,6 @@ def get_paths(G, index, ring_sizes):
     """
     Get all the paths (rings) between the index atom and its neighbor
     """
-
-    # first find the neighbor
-    import networkx as nx
 
     neighbors = list(nx.neighbors(G, index))
     neighbor = neighbors[0]

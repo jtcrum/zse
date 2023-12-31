@@ -41,13 +41,13 @@ def divalent(atoms, M, path=None):
                     tmp = []
     oxygens = np.array(oxygens)
     traj = []
-    for l in range(len(aluminum)):
+    for l, item in enumerate(aluminum):
         for i in range(len(oxygens[l, :])):
             for j in (x for x in range(len(oxygens[l, :])) if x > i):
                 totpos = atoms.get_positions()
                 a = totpos[oxygens[l, i], :]
                 b = totpos[oxygens[l, j], :]
-                c = totpos[aluminum[l], :]
+                c = totpos[item, :]
                 pos = a - c + b
                 tpos = pos.reshape(1, 3)
                 adsorbate = Atoms(M)
@@ -59,7 +59,7 @@ def divalent(atoms, M, path=None):
                     os.makedirs(
                         "{0}/D-{1}-{2}-{3}".format(
                             path,
-                            str(aluminum[l]),
+                            str(item),
                             str(oxygens[l, j]),
                             str(oxygens[l, i]),
                         )
@@ -68,7 +68,7 @@ def divalent(atoms, M, path=None):
                     write(
                         "{0}/D-{1}-{2}-{3}/POSCAR".format(
                             path,
-                            str(aluminum[l]),
+                            str(item),
                             str(oxygens[l, j]),
                             str(oxygens[l, i]),
                         ),

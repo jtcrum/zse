@@ -78,8 +78,7 @@ def get_rings(atoms, index, validation=None, max_ring=12):
         if index_symbol == "O":
             warnings.warn("WARNING: Can't find vertex symbols of oxygen atoms")
             return False, False, False, False
-        else:
-            paths = vertex(paths)
+        paths = vertex(paths)
     if validation == "sastre":
         paths = sastre(G, paths, index_symbol)
     if validation == "crum":
@@ -189,8 +188,7 @@ def get_ordered_vertex(atoms, index, max_ring=12):
     if index_symbol == "O":
         warnings.warn("WARNING: Can't find vertex symbols of oxygen atoms")
         return False, False, False, False
-    else:
-        paths = vertex(paths)
+    paths = vertex(paths)
 
     # convert the indices of the paths back to standard cell indices
     ordered_vertex, paths = vertex_order(paths)
@@ -267,13 +265,11 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
         paths = sp(G, paths)
     elif validation == "d2":
         raise ValueError("d2 validation not implemented")
-        # paths = d2(G, paths)
     elif validation == "sphere":
         if cutoff is None:
             raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
-            return None
         paths = sphere(large_atoms, paths, cutoff)
     elif validation == "cross_distance":
         paths = cross_distance(large_atoms, paths)
@@ -349,7 +345,6 @@ def get_trings(atoms, index, code, validation="cross_distance", cutoff=3.15):
         paths = sp(G, paths)
     elif validation == "d2":
         raise ValueError("d2 validation not implemented")
-        # paths = d2(G, paths)
     elif validation == "sphere":
         if cutoff is None:
             raise ValueError(
