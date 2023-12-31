@@ -28,6 +28,7 @@ def make_iza_zeolite(code: str) -> Atoms:
     zeolite.info["framework"] = code
     return zeolite
 
+
 def get_ratio(atoms: Atoms, heteroatom: str, offset: int = 0) -> float:
     """
     Calculate the Si/heteroatom ratio of a zeolite.
@@ -85,6 +86,7 @@ def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str]) -> float:
     else:
         return np.inf
 
+
 def exchange_unique_T_sites(
     zeolite: Atoms,
     code: str,
@@ -109,7 +111,9 @@ def exchange_unique_T_sites(
     T_info = get_T_info(zeolite, code, ignored_T_indices=ignored_T_indices)
 
     for T_label, T_indices in T_info.items():
-        T_index = T_indices[0] # TODO: we want to consider all unique T sites; this is only true for all-Si zeolites.
+        T_index = T_indices[
+            0
+        ]  # TODO: we want to consider all unique T sites; this is only true for all-Si zeolites.
         exchanged_zeolites, ring_locations = monovalent(
             tsub(zeolite, T_index, heteroatom), T_index, cation
         )
