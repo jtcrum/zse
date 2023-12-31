@@ -87,10 +87,10 @@ def remove_dups(paths):
     This is a helper function for get_orings and get_trings.
     """
     d = []
-    for i in range(len(paths)):
+    for i, item in enumerate(paths):
         for j in range((i + 1), len(paths)):
             if i != j:
-                st1 = set(paths[i])
+                st1 = set(item)
                 st2 = set(paths[j])
                 if st1 == st2:
                     d.append(int(j))
@@ -278,9 +278,9 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
         ring_tlist = label_rings[length]
         ring_full = index_rings[length]
         d = []
-        for i in range(len(ring_tlist)):
+        for i, item in enumerate(ring_tlist):
             for j in range((i + 1), len(ring_tlist)):
-                st1 = " ".join(map(str, ring_tlist[i]))
+                st1 = " ".join(map(str, item))
                 st2 = " ".join(map(str, ring_tlist[j]))
                 st2_2 = " ".join(map(str, reversed(ring_tlist[j])))
                 if st2 in f"{st1} {st1}" or st2_2 in f"{st1} {st1}":
@@ -306,9 +306,9 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
                         d.append(int(j))
         tmp1 = []
         tmp2 = []
-        for i in range(len(ring_tlist)):
+        for i, item in enumerate(ring_tlist):
             if i not in d:
-                tmp1.append(ring_tlist[i])
+                tmp1.append(item)
                 tmp2.append(ring_full[i])
         label_rings[length] = tmp1
         index_rings[length] = tmp2
