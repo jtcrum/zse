@@ -48,5 +48,4 @@ def get_unique_structures(zeolites: list[Atoms]) -> list[Structure] | list[Atoms
     from pymatgen.io.ase import AseAtomsAdaptor
 
     structures = [AseAtomsAdaptor().get_structure(atoms) for atoms in zeolites]
-    unique_structures = [s[0] for s in StructureMatcher().group_structures(structures)]
-    return unique_structures
+    return [s[0] for s in StructureMatcher().group_structures(structures)]

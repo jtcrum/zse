@@ -47,7 +47,7 @@ def get_osites(code: str):
     oinds = [atom.index for atom in z if atom.symbol == "O"]
     index = 0
     first_os = []
-    for _, m in enumerate(omult):
+    for m in omult:
         first_os.append(oinds[index])
         index += m
     return osites, omult, first_os
@@ -61,7 +61,7 @@ def get_tsites(code, T_atoms: list[str] = None):
     tinds = [atom.index for atom in z if atom.symbol in T_atoms]
     index = 0
     first_ts = []
-    for _, m in enumerate(tmult):
+    for m in tmult:
         first_ts.append(tinds[index])
         index += m
     return tsites, tmult, first_ts
@@ -73,10 +73,7 @@ def label_osites(atoms, code):
 
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
-    repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
-
+    repeat = [int(round(ac / zc)) for zc, ac in zip(zcell, acell)]
     z = z.repeat(repeat)
     oinds = [atom.index for atom in z if atom.symbol == "O"]
 
@@ -99,9 +96,7 @@ def label_tsites(atoms, code):
 
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
-    repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
+    repeat = [int(round(ac / zc)) for zc, ac in zip(zcell, acell)]
     z = z.repeat(repeat)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
 
@@ -162,9 +157,7 @@ def site_labels(atoms, code):
     z = get_framework(code)
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
-    repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
+    repeat = [int(round(ac / zc)) for zc, ac in zip(zcell, acell)]
     z = z.repeat(repeat)
 
     zo_inds = [atom.index for atom in z if atom.symbol == "O"]
@@ -181,18 +174,14 @@ def site_labels(atoms, code):
         sym = a.symbol
         if sym == "O":
             diffp = poszo - pa
-            mags = []
-            for d in diffp:
-                mags.append(np.linalg.norm(d))
+            mags = [np.linalg.norm(d) for d in diffp]
             ind = mags.index(min(mags))
             ind = zo_inds[ind]
             label = all_labels[ind]
 
         if sym != "O":
             diffp = poszt - pa
-            mags = []
-            for d in diffp:
-                mags.append(np.linalg.norm(d))
+            mags = [np.linalg.norm(d) for d in diffp]
             ind = mags.index(min(mags))
             ind = zt_inds[ind]
             label = all_labels[ind]

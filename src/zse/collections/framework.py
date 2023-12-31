@@ -9,14 +9,12 @@ filepath = pkg_resources.resource_filename(__name__, path)
 
 def get_framework(code):
     db = connect(filepath)
-    atoms = db.get_atoms(fw=code)
-    return atoms
+    return db.get_atoms(fw=code)
 
 
 def get_ring_sizes(code):
     db = connect(filepath)
-    fw_rings = db.get(fw=code).data.rings
-    return fw_rings
+    return db.get(fw=code).data.rings
 
 
 def get_tsites(code):
@@ -35,7 +33,4 @@ def get_osites(code):
 
 def get_all_fws():
     db = connect(filepath)
-    fws = []
-    for row in db.select():
-        fws.append(row.fw)
-    return fws
+    return [row.fw for row in db.select()]

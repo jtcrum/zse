@@ -112,19 +112,13 @@ def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None)
 
     # get all the rings associated with the T site
     # this follows the same steps as rings.get_trings()
-    if included_rings:
-        max_ring = max(included_rings)
-    else:
-        max_ring = 12
+    max_ring = max(included_rings) if included_rings else 12
     c, paths, ra, large_atoms = get_rings(
         atoms, index, validation="crum", max_ring=max_ring
     )
     # which rings should be included
-    if included_rings == None:
-        included_rings = []
-        for p in np.unique(c):
-            if p > 4:
-                included_rings.append(p * 2)
+    if included_rings is None:
+        included_rings = [p * 2 for p in np.unique(c) if p > 4]
     else:
         included_rings = [x * 2 for x in included_rings]
 

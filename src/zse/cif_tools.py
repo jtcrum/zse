@@ -26,13 +26,17 @@ def get_atom_lines(alllines):
         if "_atom" in line:
             order.append(line)
             start = i + 1
-    end = None
-    for i, line in enumerate(alllines[start:]):
-        if len(line.split()) == 0:
-            end = start + i - 1
-            break
-    if not end:
-        end = len(alllines) - 1
+    end = (
+        next(
+            (
+                start + i - 1
+                for i, line in enumerate(alllines[start:])
+                if len(line.split()) == 0
+            ),
+            None,
+        )
+        or len(alllines) - 1
+    )
 
     new_order = []
     for i, o in enumerate(order):
@@ -51,10 +55,8 @@ def get_atom_lines(alllines):
 
 
 def fix_cif(cif):
-    f = open(cif)
-    alllines = f.readlines()
-    f.close()
-
+    with open(cif) as f:
+        alllines = f.readlines()
     for i, line in enumerate(alllines):
         if "IT_coordinate_system_code" in line:
             fields = line.split()
@@ -65,9 +67,8 @@ def fix_cif(cif):
 
     file_name = cif.rstrip(".cif")
     temp_file = "{0}/{1}_temp.cif".format(filepath, file_name.split("/")[-1])
-    f = open(temp_file, "w")
-    f.writelines(alllines)
-    f.close()
+    with open(temp_file, "w") as f:
+        f.writelines(alllines)
     atoms = read(temp_file)
     os.remove(temp_file)
     return atoms, alllines
@@ -94,7 +95,6 @@ def get_tsites(cif):
     tpos = np.array(tpos)
     pos = z[si].get_scaled_positions()
     tinds = []
-    tmults = []
     t_class = []
     for tp in tpos:
         for i, p in enumerate(pos):
@@ -103,8 +103,7 @@ def get_tsites(cif):
             if sum(diff) <= 0.03:
                 tinds.append(si[i])
 
-    for i in range(1, len(tsites)):
-        tmults.append(tinds[i] - tinds[i - 1])
+    tmults = [tinds[i] - tinds[i - 1] for i in range(1, len(tsites))]
     tmults.append(si[-1] - tinds[-1] + 1)
 
     n = len(si)
@@ -131,8 +130,6 @@ def get_osites(cif):
     opos = np.array(opos)
     pos = z.get_scaled_positions()
     oinds = []
-    omults = []
-
     o = [atom.index for atom in z if atom.symbol == "O"]
     o_pos = z[o].get_scaled_positions()
     for op in opos:
@@ -142,8 +139,7 @@ def get_osites(cif):
             if sum(diff) <= 0.02:
                 oinds.append(o[i])
 
-    for i in range(1, len(osites)):
-        omults.append(oinds[i] - oinds[i - 1])
+    omults = [oinds[i] - oinds[i - 1] for i in range(1, len(osites))]
     omults.append(o[-1] - oinds[-1] + 1)
 
     n = len(o)

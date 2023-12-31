@@ -74,7 +74,6 @@ def get_rings(atoms, index, validation=None, max_ring=12):
     # find cycles that don't contain any shortcuts
     paths = goetzke(G, index, max_ring)
 
-    # remove some cycles based on other validation rules
     if validation == "vertex":
         if index_symbol == "O":
             warnings.warn("WARNING: Can't find vertex symbols of oxygen atoms")
@@ -87,13 +86,11 @@ def get_rings(atoms, index, validation=None, max_ring=12):
         paths = crum(G, paths, index_symbol)
 
     # convert the indices of the paths back to standard cell indices
-    ring_list = [int(len(p) / 2) for p in paths]
+    ring_list = [len(p) // 2 for p in paths]
     tmp_paths = [x for _, x in sorted(zip(ring_list, paths))]
     paths = []
     for p in tmp_paths:
-        temp = []
-        for i in p:
-            temp.append(large_atoms[i].tag)
+        temp = [large_atoms[i].tag for i in p]
         paths.append(temp)
 
     ring_list.sort()
@@ -134,7 +131,7 @@ def get_unique_rings(atoms, tsites, validation=None, max_ring=12):
     paths = remove_geometric_dups(a, paths)
 
     # sort rings from smallest to largest
-    ring_list = [int(len(p) / 2) for p in paths]
+    ring_list = [len(p) // 2 for p in paths]
     paths = [x for _, x in sorted(zip(ring_list, paths))]
     ring_list.sort()
 
@@ -200,9 +197,7 @@ def get_ordered_vertex(atoms, index, max_ring=12):
     tmp_paths = paths
     paths = []
     for p in tmp_paths:
-        temp = []
-        for i in p:
-            temp.append(large_atoms[i].tag)
+        temp = [large_atoms[i].tag for i in p]
         paths.append(temp)
 
     # get the ordered vertex symbol
@@ -273,7 +268,7 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
     if validation == "d2":
         paths = d2(G, paths)
     if validation == "sphere":
-        if cutoff == None:
+        if cutoff is None:
             print(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
@@ -284,13 +279,11 @@ def get_orings(atoms, index, code, validation="cross_distance", cutoff=3.15):
 
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
-    ring_list = [int(len(p) / 2) for p in paths]
+    ring_list = [len(p) // 2 for p in paths]
     tmp_paths = [x for _, x in sorted(zip(ring_list, paths), reverse=True)]
     paths = []
     for p in tmp_paths:
-        temp = []
-        for i in p:
-            temp.append(large_atoms[i].tag)
+        temp = [large_atoms[i].tag for i in p]
         paths.append(temp)
 
     ring_list.sort(reverse=True)
@@ -357,25 +350,22 @@ def get_trings(atoms, index, code, validation="cross_distance", cutoff=3.15):
         raise ValueError("d2 validation not implemented")
         # paths = d2(G, paths)
     if validation == "sphere":
-        if cutoff == None:
+        if cutoff is None:
             raise ValueError(
                 "INPUT ERROR: Validation with geometry requires cutoff in Å, however, cutoff not set."
             )
-            return None
         paths = sphere(large_atoms, paths, cutoff)
     if validation == "cross_distance":
         paths = cross_distance(large_atoms, paths)
 
     # finally organize all outputs: list of ring sizes, atom indices that make
     # ring paths, and an atoms object that shows all those rings
-    ring_list = [int(len(p) / 2) for p in paths]
+    ring_list = [len(p) // 2 for p in paths]
     paths2 = [x for _, x in sorted(zip(ring_list, paths), reverse=True)]
     tmp_paths = [x for _, x in sorted(zip(ring_list, paths), reverse=True)]
     paths = []
     for p in tmp_paths:
-        temp = []
-        for i in p:
-            temp.append(large_atoms[i].tag)
+        temp = [large_atoms[i].tag for i in p]
         paths.append(temp)
     ring_list.sort(reverse=True)
 
@@ -421,9 +411,7 @@ def get_fwrings(code, validation="cross_distance", cutoff=3.15):
     index_paths = paths
     label_paths = []
     for path in index_paths:
-        l = []
-        for p in path:
-            l.append(labels[p])
+        l = [labels[p] for p in path]
         label_paths.append(l)
 
     # now we want to remove duplicate rings based on the label_paths
@@ -491,14 +479,12 @@ def get_vertex_symbols(code, index):
         # this finds the shortest path between the two
         path, l = shortest_valid_path(G, o1, o2, index)
         # this finds all valid paths of that length between the two
-        paths = [p for p in all_paths(G, o1, o2, index, l)]
+        paths = list(all_paths(G, o1, o2, index, l))
         traj += [paths_to_atoms(large_atoms, paths)]
         tmp_paths = []
         for p in paths:
-            temp = []
-            for x in p:
-                temp.append(large_atoms[x].tag)
+            temp = [large_atoms[x].tag for x in p]
             tmp_paths.append(temp)
-        vertex_symbols[f"{i + 1}:{v_label}"] = [path for path in tmp_paths]
+        vertex_symbols[f"{i + 1}:{v_label}"] = list(tmp_paths)
 
     return vertex_symbols, traj

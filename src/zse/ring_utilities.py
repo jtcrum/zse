@@ -27,7 +27,7 @@ def atoms_to_graph(atoms, index, max_ring):
     # repeat cell, center the cell, and wrap the atoms back into the cell
     cell = atoms.cell.cellpar()[:3]
     repeat = []
-    for i, c in enumerate(cell):
+    for c in cell:
         if c / 2 < max_ring / 2 + 5:
             l = c
             re = 1
@@ -53,10 +53,7 @@ def atoms_to_graph(atoms, index, max_ring):
     positions = large_atoms.get_positions()
     distances = get_distances(p1, positions)[1][0]
 
-    delete = []
-    for i, l in enumerate(distances):
-        if l > max_ring / 2 + 5:
-            delete.append(i)
+    delete = [i for i, l in enumerate(distances) if l > max_ring / 2 + 5]
     inds = [atom.index for atom in large_atoms]
     large_atoms.set_tags(inds)
     atoms = deepcopy(large_atoms)
@@ -97,10 +94,7 @@ def remove_dups(paths):
                 st2 = set(paths[j])
                 if st1 == st2:
                     d.append(int(j))
-    tmp_paths = []
-    for i in range(len(paths)):
-        if i not in d:
-            tmp_paths.append(paths[i])
+    tmp_paths = [paths[i] for i in range(len(paths)) if i not in d]
     paths = tmp_paths
     return paths
 
@@ -138,11 +132,10 @@ def remove_geometric_dups(atoms, paths):
 
 def get_vertices(G, index):
     vertices = []
-    neighbors = [n for n in nx.neighbors(G, index)]
+    neighbors = list(nx.neighbors(G, index))
     l = len(neighbors)
     for j in range(l - 1):
-        for k in range(j + 1, l):
-            vertices.append([neighbors[j], neighbors[k]])
+        vertices.extend([neighbors[j], neighbors[k]] for k in range(j + 1, l))
     return vertices
 
 
@@ -220,7 +213,7 @@ def vertex_order(r):
         o_pair_counts["-".join(oxys)] += 1
         o_pair_weights["-".join(oxys)] += len(path)
 
-    perms = [x for x in perm(oxygens)]
+    perms = list(perm(oxygens))
     weights = []
     order = [[0, 2], [0, 1], [1, 2], [2, 3], [3, 0], [1, 3]]
     for p in perms:
@@ -229,7 +222,7 @@ def vertex_order(r):
             try:
                 k = "-".join(sorted([str(p[o[0]]), str(p[o[1]])]))
                 w.append(o_pair_weights[k])
-            except:
+            except Exception:
                 pass
         weights.append(w)
 
@@ -249,21 +242,20 @@ def vertex_order(r):
             k = "-".join(sorted([str(oxygens[o[0]]), str(oxygens[o[1]])]))
             sizes.append(o_pair_sizes[k])
             counts.append(o_pair_counts[k])
-            for x in o_pair_paths[k]:
-                new_r.append(x)
-        except:
+            new_r.extend(iter(o_pair_paths[k]))
+        except Exception:
             pass
 
     ordered_v = []
     for c, s in zip(counts, sizes):
-        if c == 1:
-            ordered_v.append(f"{int(s / 2)}")
-        elif c == 0:
+        if c == 0:
             ordered_v.append("*")
+        elif c == 1:
+            ordered_v.append(f"{int(s / 2)}")
         else:
             ordered_v.append(f"{int(s / 2)}_{c}")
     ordered_v = "•".join(ordered_v)
-    c = [int(len(x) / 2) for x in new_r]
+    c = [len(x) // 2 for x in new_r]
 
     return ordered_v, new_r
 
@@ -273,7 +265,7 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
     label_rings = {}
     index_rings = {}
     for i, r in enumerate(label_paths):
-        length = int(len(r) / 2)
+        length = len(r) // 2
         if length not in label_rings:
             label_rings[length] = [r]
             index_rings[length] = [index_paths[i]]
@@ -291,7 +283,7 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
                 st1 = " ".join(map(str, ring_tlist[i]))
                 st2 = " ".join(map(str, ring_tlist[j]))
                 st2_2 = " ".join(map(str, reversed(ring_tlist[j])))
-                if st2 in st1 + " " + st1 or st2_2 in st1 + " " + st1:
+                if st2 in f"{st1} {st1}" or st2_2 in f"{st1} {st1}":
                     p = ring_full[i]
                     atoms, trans = center(atoms, p[0])
                     cross1 = []
@@ -332,16 +324,14 @@ def get_paths(G, index, ring_sizes):
     # first find the neighbor
     import networkx as nx
 
-    neighbors = [n for n in nx.neighbors(G, index)]
+    neighbors = list(nx.neighbors(G, index))
     neighbor = neighbors[0]
 
-    # next find all paths connecting index and neighbor
-    paths = []
-    for path in nx.all_simple_paths(G, index, neighbor, cutoff=max(ring_sizes) - 1):
-        if len(path) in ring_sizes:
-            paths.append(path)
-
-    return paths
+    return [
+        path
+        for path in nx.all_simple_paths(G, index, neighbor, cutoff=max(ring_sizes) - 1)
+        if len(path) in ring_sizes
+    ]
 
 
 def dict_to_atoms(index_paths, atoms):

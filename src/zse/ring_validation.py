@@ -31,8 +31,8 @@ def sp(G, paths):
     for p in paths:
         l = len(p)
         flag = True
-        if l / 2 < 8:
-            for j in range(1, l - 3, 2):
+        for j in range(1, l - 3, 2):
+            if l < 16:
                 for k in range(j + 4, l, 2):
                     shortest_path = nx.shortest_path(G, p[j], p[k])
                     for r in shortest_path:
@@ -41,8 +41,7 @@ def sp(G, paths):
                             if len(shortest_path) < min(lengths):
                                 flag = False
                                 break
-        elif l / 2 >= 8:
-            for j in range(1, l - 3, 2):
+            else:
                 for k in range(j + 2, l, 2):
                     shortest_path = nx.shortest_path(G, p[j], p[k])
                     for r in shortest_path:
@@ -51,8 +50,6 @@ def sp(G, paths):
                             if len(shortest_path) < max(lengths):
                                 flag = False
                                 break
-            # if not flag:
-            #     break
         if flag:
             valid_paths.append(p)
 
@@ -98,10 +95,9 @@ def cross_distance(atoms, paths):
 
     delete = []
     for j, r in enumerate(paths):
-        n = int(len(r) / 2)
+        n = len(r) // 2
         cutoff = n / 4
-        if cutoff < 2:
-            cutoff = 2
+        cutoff = max(cutoff, 2)
         if n % 2 == 0 and n > 5:
             distances = []
             inner_flag = False
@@ -113,12 +109,8 @@ def cross_distance(atoms, paths):
                     inner_flag = True
                     break
             if inner_flag == False:
-                outer_flag = False
-                for d in distances:
-                    if d > n - math.floor(n / 6):
-                        outer_flag = True
-                        break
-                if outer_flag == False:
+                outer_flag = any(d > n - math.floor(n / 6) for d in distances)
+                if not outer_flag:
                     delete.append(j)
         if n % 2 != 0 and n > 5:
             r2 = deepcopy(r)
@@ -131,11 +123,7 @@ def cross_distance(atoms, paths):
                     break
 
     tmp_paths = deepcopy(paths)
-    paths = []
-    for j, r in enumerate(tmp_paths):
-        if j not in delete:
-            paths.append(r)
-
+    paths = [r for j, r in enumerate(tmp_paths) if j not in delete]
     return paths
 
 
@@ -155,8 +143,7 @@ def goetzke(G, index, cutoff):
         for i in sp[index]:
             x = sp[index][i]
             if x == (size / 2):
-                path = make_path(sp, index, i, size)
-                if path:
+                if path := make_path(sp, index, i, size):
                     paths += path
     return paths
 
@@ -168,7 +155,7 @@ def get_left(cl, s1, count, sp):
         try:
             if q == 1 and sp[j1][s1] == count:
                 left_options.append(j1)
-        except:
+        except Exception:
             pass
     return left_options
 
@@ -184,7 +171,7 @@ def get_right(cr, s2, lo, count, size, sp):
                 if q == 1 and sp[j2][s2] == count and sp[l][j2] == size / 2:
                     temp.append(j2)
                     flag = True
-            except:
+            except Exception:
                 pass
         if flag:
             right_options.append(temp)
@@ -222,9 +209,8 @@ def make_path(sp, s1, s2, size):
                 if size / 2 % 2 == 0:
                     if l1 == r2[-1] and r1 == l2[-1]:
                         flag = False
-                else:
-                    if l1 == r2[-2] and r1 == l2[-2]:
-                        flag = False
+                elif l1 == r2[-2] and r1 == l2[-2]:
+                    flag = False
             if flag:
                 left_overall.append(l)
                 right_overall.append(r)
@@ -249,10 +235,7 @@ def sastre(G, paths, index_symbol):
 
     """
 
-    if index_symbol == "O":
-        start = 0
-    else:
-        start = 1
+    start = 0 if index_symbol == "O" else 1
     valid_paths = []
     for p in paths:
         p2 = p + p[:4]
@@ -275,18 +258,14 @@ def crum(G, paths, index_symbol):
     """
     import networkx as nx
 
-    if index_symbol == "O":
-        start = 1
-    else:
-        start = 0
-
+    start = 1 if index_symbol == "O" else 0
     valid_paths = []
     for path in paths:
         FLAG = False
         path2 = path + path
         l = len(path)
         if l > 8 and (l / 2) % 2 == 0:
-            for j in range(start, int(l / 2) - 1, 2):
+            for j in range(start, l // 2 - 1, 2):
                 for k in [int(j + l / 2 - 2)]:
                     p1 = path2[j : k + 1]
                     p2 = path2[k : l + j + 1]
@@ -330,8 +309,7 @@ def vertex(paths):
     oxygens = []
     v_paths = defaultdict(list)
     for p in paths:
-        oxygens.append(p[1])
-        oxygens.append(p[-1])
+        oxygens.extend((p[1], p[-1]))
         sites = [p[1], p[-1]]
         sites.sort()
         v_paths[f"{sites[0]}-{sites[1]}"].append(p)
@@ -340,8 +318,5 @@ def vertex(paths):
     for v in sorted(v_paths):
         paths = v_paths[v]
         l = len(paths[0])
-        for p in paths:
-            if len(p) == l:
-                valid_paths.append(p)
-
+        valid_paths.extend(p for p in paths if len(p) == l)
     return valid_paths
