@@ -74,8 +74,6 @@ def atoms_to_graph(atoms, index, max_ring):
         for o in idx:
             matrix[t, osites[o]] = 1
             matrix[osites[o], t] = 1
-    # now we make the graph
-    import networkx as nx
 
     G = nx.from_numpy_array(matrix)
     # G.remove_nodes_from(delete)
@@ -140,8 +138,6 @@ def get_vertices(G, index):
 
 
 def shortest_valid_path(G, o1, o2, index, l):
-    import networkx as nx
-
     G2 = deepcopy(G)
     G2.remove_node(index)
     flag = True
@@ -164,8 +160,6 @@ def shortest_valid_path(G, o1, o2, index, l):
 
 
 def is_valid(G, path):
-    import networkx as nx
-
     l = len(path)
     flag = False
     for j in range(1, l - 1, 2):
@@ -320,9 +314,6 @@ def get_paths(G, index, ring_sizes):
     """
     Get all the paths (rings) between the index atom and its neighbor
     """
-
-    # first find the neighbor
-    import networkx as nx
 
     neighbors = list(nx.neighbors(G, index))
     neighbor = neighbors[0]
