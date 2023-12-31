@@ -24,7 +24,6 @@ def get_os_and_ts(atoms, index):
     oxygens = np.array(oxygens)
     silicons = []
     for l in oxygens:
-        tmp = []
         for m in total_silicon:
             distance = lattice.get_distance(l, m, mic=True)
             if distance < 2.0:
@@ -78,7 +77,7 @@ def add_one_proton(atoms, index, oxygens, silicons, code, path=None):
     return traj, locations
 
 
-def add_two_protons(atoms, indices, oxygens, silicons, code, path=None):
+def add_two_protons(atoms, indices, oxygens, code, path=None):
     labels = site_labels(atoms, code)
 
     adsorbate = molecule("H")

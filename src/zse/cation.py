@@ -113,7 +113,7 @@ def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None)
     # get all the rings associated with the T site
     # this follows the same steps as rings.get_trings()
     max_ring = max(included_rings) if included_rings else 12
-    c, paths, ra, large_atoms = get_rings(
+    c, paths, _, large_atoms = get_rings(
         atoms, index, validation="crum", max_ring=max_ring
     )
     # which rings should be included
@@ -123,10 +123,10 @@ def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None)
         included_rings = [x * 2 for x in included_rings]
 
     # get a list of all the rings and their sizes present
-    Class, class_count, paths = count_rings(paths)
+    _, class_count, paths = count_rings(paths)
 
     # add the cation to each ring, put structure in a trajectory
-    large_atoms, translation = center(large_atoms, index)
+    large_atoms, _ = center(large_atoms, index)
     traj, locations = add_cation(
         atoms,
         large_atoms,

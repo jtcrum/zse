@@ -123,7 +123,7 @@ def get_unique_rings(atoms, tsites, validation=None, max_ring=12):
 
     paths = []
     for t in tsites:
-        c, r, ra, a = get_rings(atoms, t, validation=validation, max_ring=max_ring)
+        _, r, _, a = get_rings(atoms, t, validation=validation, max_ring=max_ring)
         paths += r
     paths = remove_dups(paths)
 
@@ -478,7 +478,7 @@ def get_vertex_symbols(code, index):
         v_label = f"{labels[large_atoms[o1].tag]}-{labels[large_atoms[o2].tag]}"
 
         # this finds the shortest path between the two
-        path, l = shortest_valid_path(G, o1, o2, index)
+        _, l = shortest_valid_path(G, o1, o2, index)
         # this finds all valid paths of that length between the two
         paths = list(all_paths(G, o1, o2, index, l))
         traj += [paths_to_atoms(large_atoms, paths)]

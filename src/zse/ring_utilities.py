@@ -182,17 +182,17 @@ def is_valid(G, path):
 
 
 def all_paths(G, o1, o2, index, l):
-    all_paths = []
+    all_paths_ = []
     G2 = deepcopy(G)
     G2.remove_node(index)
     paths = nx.all_simple_paths(G2, o1, o2, l)
     for path in paths:
         path.append(index)
         if len(path) == l:
-            flag, j = is_valid(G, path)
+            flag, _ = is_valid(G, path)
             if not flag and path not in all_paths:
-                all_paths.append(path)
-    return all_paths
+                all_paths_.append(path)
+    return all_paths_
 
 
 def vertex_order(r):
@@ -285,7 +285,7 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
                 st2_2 = " ".join(map(str, reversed(ring_tlist[j])))
                 if st2 in f"{st1} {st1}" or st2_2 in f"{st1} {st1}":
                     p = ring_full[i]
-                    atoms, trans = center(atoms, p[0])
+                    atoms, _ = center(atoms, p[0])
                     cross1 = []
                     for x in range(1, len(p) + 1, 2):
                         for r in range(x + 2, len(p) + 1, 2):
@@ -294,7 +294,7 @@ def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
                     cross1.sort()
 
                     p = ring_full[j]
-                    atoms, trans = center(atoms, p[0])
+                    atoms, _ = center(atoms, p[0])
                     cross2 = []
                     for x in range(1, len(p) + 1, 2):
                         for r in range(x + 2, len(p) + 1, 2):

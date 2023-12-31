@@ -242,7 +242,7 @@ def sastre(G, paths, index_symbol):
         l = len(p)
         for j in range(start, len(p), 2):
             flag = False
-            path, length = shortest_valid_path(G, p2[j], p2[j + 2], p2[j + 1], l)
+            _, length = shortest_valid_path(G, p2[j], p2[j + 2], p2[j + 1], l)
             if length == l:
                 flag = True
                 break
