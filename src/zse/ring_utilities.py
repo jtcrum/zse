@@ -138,7 +138,6 @@ def get_vertices(G, index):
 
 
 def shortest_valid_path(G, o1, o2, index, l):
-
     G2 = deepcopy(G)
     G2.remove_node(index)
     flag = True
@@ -161,7 +160,6 @@ def shortest_valid_path(G, o1, o2, index, l):
 
 
 def is_valid(G, path):
-
     l = len(path)
     flag = False
     for j in range(1, l - 1, 2):
