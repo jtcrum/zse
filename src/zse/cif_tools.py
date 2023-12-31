@@ -7,9 +7,6 @@ import numpy as np
 import pkg_resources
 from ase.io import read
 
-warnings.filterwarnings("ignore")
-
-
 path = ".temp_files/"
 filepath = pkg_resources.resource_filename(__name__, path)
 
