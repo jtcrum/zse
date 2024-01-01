@@ -1,3 +1,4 @@
 ase==3.22.1
 networkx==3.2.1
 numpy==1.26.2
+pymatgen==2023.12.18

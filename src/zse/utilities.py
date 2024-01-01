@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from ase.geometry import get_distances
+from pymatgen.analysis.structure_matcher import StructureMatcher
+from pymatgen.io.ase import AseAtomsAdaptor
 
 from zse.collections.framework import get_framework
 from zse.collections.framework import get_osites as get_osites_
@@ -175,3 +177,15 @@ def site_labels(atoms, code):
         Dict[a.index] = label
 
     return Dict
+
+
+def get_unique_structures(zeolites):
+    """
+    Get a unique list of structures from a list of Atoms objects.
+    """
+
+    structures = [AseAtomsAdaptor().get_structure(atoms) for atoms in zeolites]
+    return [
+        AseAtomsAdaptor.get_atoms(s[0])
+        for s in StructureMatcher().group_structures(structures)
+    ]

@@ -16,7 +16,7 @@ def test_all_silica():
     assert_array_almost_equal(atoms.get_cell(), ref_atoms.get_cell())
 
 
-def test_exchange_unique():
+def test_exchange_unique_cha():
     exchanged_zeolites = make_all_exchanged_zeolites("CHA", "B", "Na")
     assert len(exchanged_zeolites) == 4
 
@@ -25,3 +25,8 @@ def test_exchange_unique():
     assert_array_equal(atoms.get_chemical_symbols(), ref_atoms.get_chemical_symbols())
     assert_array_almost_equal(atoms.get_positions(), ref_atoms.get_positions())
     assert_array_almost_equal(atoms.get_cell(), ref_atoms.get_cell())
+
+
+def test_exchange_unique_mor():
+    exchanged_zeolites = make_all_exchanged_zeolites("MOR", "B", "Na")
+    assert len(exchanged_zeolites) == 26

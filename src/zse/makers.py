@@ -9,7 +9,7 @@ from zse.cation import monovalent
 from zse.collections.framework import get_framework
 from zse.substitute import tsub
 from zse.t_utilities import get_ratio, get_T_info
-from zse.utilities import site_labels
+from zse.utilities import get_unique_structures, site_labels
 
 if TYPE_CHECKING:
     from ase.atoms import Atoms
@@ -67,4 +67,4 @@ def make_all_exchanged_zeolites(
             exchanged_zeolite.info["cation_index"] = len(exchanged_zeolite) - 1
 
             zeolites.append(exchanged_zeolite)
-    return zeolites
+    return get_unique_structures(zeolites)
