@@ -23,11 +23,16 @@ def exchange_unique_T_sites(
     min_heteroatom_dist: float | None = 3.5,
 ) -> list[Atoms]:
     """
-    Enumerate all unique T sites and, for each, exchange a single Si atom with a heteroatom. Multiple
-    configurations for the heteroatom are considered, and all are returned. Each is charge balanced
-    with the specified cation, and all cation configurations are returned.
+    Enumerate all unique T sites and, for each, exchange a single Si atom with a heteroatom.
+    Each is charge balanced with the specified cation, and all heteratom-cation configurations
+    are returned. Indices in `ignored_T_indices` will not be substituted. If `min_heteroatom_dist`
+    is specified, structures with inter-heteroatom distances less than this value will be discarded.
 
-    Only supports monovalent cations currently.
+    Limitations:
+    - Only supports monovalent cations currently.
+    - Unique T sites are determined without consideration of the atom identity. Practically, this means
+    that exchanging a T site with a heteroatom will not increase the number of unique T sites in the
+    framework even though there are now more unique chemical environments than before.
     """
 
     def _prep_labels(d: dict, labels: list[Any]) -> None:
