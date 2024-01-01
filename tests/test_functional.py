@@ -18,8 +18,7 @@ def test_all_silica():
 
 
 def test_exchange_unique():
-    zeolite = read(f"{REF_DATA}/CHA.cif")
-    exchanged_zeolites = exchange_unique_T_sites(zeolite, "CHA", "B", "Na")
+    exchanged_zeolites = exchange_unique_T_sites("CHA", "B", "Na")
     assert len(exchanged_zeolites) == 4
 
     atoms = exchanged_zeolites[3]
