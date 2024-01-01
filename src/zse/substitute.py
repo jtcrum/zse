@@ -125,7 +125,7 @@ def exchange_unique_T_sites(
             )
 
             exchanged_zeolite.info["Si_heteroatom_ratio"] = get_ratio(
-                exchanged_zeolite, heteroatom
+                exchanged_zeolite, heteroatom=heteroatom
             )
             exchanged_zeolite.info["heteroatom_T_sites"].append(T_label)
             exchanged_zeolite.info["heteroatom_indices"].append(T_index)
@@ -134,7 +134,7 @@ def exchange_unique_T_sites(
             exchanged_zeolite.info["cation"] = cation
 
             if min_heteroatom_dist:
-                min_dist = get_min_T_distance(exchanged_zeolite, heteroatom)
+                min_dist = get_min_T_distance(exchanged_zeolite, T_symbols=heteroatom)
                 if min_dist < min_heteroatom_dist:
                     continue
             zeolites.append(exchanged_zeolite)

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from ase.atoms import Atoms
 
 
-def get_ratio(atoms: Atoms, heteroatom: str) -> float:
+def get_ratio(atoms: Atoms, heteroatom: str = "Al") -> float:
     """
     Calculate the Si/heteroatom ratio of a zeolite.
     """
@@ -46,9 +46,10 @@ def get_T_info(
     return T_info
 
 
-def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str]) -> float:
+def get_min_T_distance(atoms: Atoms, T_symbols: str | list[str] = "Al") -> float:
     """
-    Get the minimum distance between all heteroatom pairs in a zeolite.
+    Get the minimum distance between all T site pairs in a zeolite, e.g.
+    to find the minimum Al-Al distance (if T_symbols = "Al")
     """
     if isinstance(T_symbols, str):
         T_symbols = [T_symbols]
