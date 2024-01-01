@@ -106,7 +106,7 @@ def exchange_unique_T_sites(
             exchanged_zeolite.info["heteroatom_T_site"] = T_label
             exchanged_zeolite.info["heteroatom_index"] = T_index
             exchanged_zeolite.info["cation_ring"] = ring_locations[j]
-            exchanged_zeolite.info["cation_index"] = (len(exchanged_zeolite) - 1)
+            exchanged_zeolite.info["cation_index"] = len(exchanged_zeolite) - 1
 
             zeolites.append(exchanged_zeolite)
     return zeolites
