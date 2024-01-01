@@ -4,9 +4,11 @@ ZSE. This is a work in progress, and more methods will be added.
 """
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from copy import deepcopy
 
+import networkx as nx
 import numpy as np
 
 from zse.ring_utilities import is_valid, shortest_valid_path
@@ -89,7 +91,6 @@ def cross_distance(atoms, paths):
     distances were determined by analyzing many valid and invalid rings.
     This method is biased by human interpretation of what constitutes a ring.
     """
-    import math
 
     atoms = scale_cell(atoms)
 
@@ -256,7 +257,6 @@ def crum(G, paths, index_symbol):
     Method to remove composite stacked rings (i.e. 8-MRs in the CHA D6R) or
     14-MRs in the AFI framework.
     """
-    import networkx as nx
 
     start = 1 if index_symbol == "O" else 0
     valid_paths = []

@@ -4,6 +4,7 @@ import os
 
 import numpy as np
 from ase import Atoms
+from ase.data import chemical_symbols, covalent_radii
 from ase.io import write
 
 from zse.cation_utilities import add_cation, count_rings
@@ -101,9 +102,6 @@ def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None)
     locations = List of all the rings that the ion was placed in. Correlates to
                 the images in the trajectory.
     """
-
-    # let's import the modules we will need to make this work
-    from ase.data import chemical_symbols, covalent_radii
 
     # I will use these radii to approximate bond lengths
     radii = {
