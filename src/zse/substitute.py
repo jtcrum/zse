@@ -47,9 +47,7 @@ def exchange_unique_T_sites(
     T_info = get_T_info(zeolite, code, ignored_T_indices=ignored_T_indices)
 
     for T_label, T_indices in T_info.items():
-        T_index = T_indices[
-            0
-        ]  # TODO: we want to consider all unique T sites; this is only true for all-Si zeolites.
+        T_index = T_indices[0]
         exchanged_zeolites, ring_locations = monovalent(
             tsub(zeolite, T_index, heteroatom), T_index, cation
         )
