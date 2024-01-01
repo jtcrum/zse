@@ -9,6 +9,7 @@ from itertools import permutations as perm
 
 import networkx as nx
 import numpy as np
+from ase.geometry import get_distances
 
 from zse.utilities import center
 
@@ -46,7 +47,6 @@ def atoms_to_graph(atoms, index, max_ring):
     large_atoms.wrap()
 
     # remove atoms that won't contribute to wrings
-    from ase.geometry import get_distances
 
     cell = large_atoms.get_cell()
     p1 = large_atoms[index].position
