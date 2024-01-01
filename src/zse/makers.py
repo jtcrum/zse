@@ -31,14 +31,13 @@ def make_iza_zeolite(code: str) -> Atoms:
 def make_all_exchanged_zeolites(
     code: str,
     heteroatom: str,
-    cation: str,
+    cation: str | None,
     ignored_T_indices: list[int] | None = None,
 ) -> list[Atoms]:
     """
     Enumerate all unique T sites and, for each, exchange a single Si atom with a heteroatom.
-    Each is charge balanced with the specified cation, and all heteratom-cation configurations
-    are returned. Indices in `ignored_T_indices` will not be substituted. If `min_heteroatom_dist`
-    is specified, structures with inter-heteroatom distances less than this value will be discarded.
+    Each is optionally charge balanced with the specified cation, and all heteratom-cation configurations
+    are returned. Indices in `ignored_T_indices` will not be substituted.
 
     Limitations:
     - Only supports monovalent cations currently.
@@ -54,17 +53,20 @@ def make_all_exchanged_zeolites(
     for T_label, T_indices in T_info.items():
         T_index = T_indices[0]
         tsubbed_zeolite = tsub(zeolite, T_index, heteroatom)
-        exchanged_zeolites, ring_locations = monovalent(
-            tsubbed_zeolite, T_index, cation
-        )
-        for j, exchanged_zeolite in enumerate(exchanged_zeolites):
-            exchanged_zeolite.info["Si_heteroatom_ratio"] = get_ratio(
-                exchanged_zeolite, heteroatom=heteroatom
+        if cation:
+            exchanged_zeolites, ring_locations = monovalent(
+                tsubbed_zeolite, T_index, cation
             )
-            exchanged_zeolite.info["heteroatom_T_site"] = T_label
-            exchanged_zeolite.info["heteroatom_index"] = T_index
-            exchanged_zeolite.info["cation_ring"] = ring_locations[j]
-            exchanged_zeolite.info["cation_index"] = len(exchanged_zeolite) - 1
+            for j, exchanged_zeolite in enumerate(exchanged_zeolites):
+                exchanged_zeolite.info["Si_heteroatom_ratio"] = get_ratio(
+                    exchanged_zeolite, heteroatom=heteroatom
+                )
+                exchanged_zeolite.info["heteroatom_T_site"] = T_label
+                exchanged_zeolite.info["heteroatom_index"] = T_index
+                exchanged_zeolite.info["cation_ring"] = ring_locations[j]
+                exchanged_zeolite.info["cation_index"] = len(exchanged_zeolite) - 1
 
-            zeolites.append(exchanged_zeolite)
+                zeolites.append(exchanged_zeolite)
+        else:
+            zeolites.append(tsubbed_zeolite)
     return get_unique_structures(zeolites)
