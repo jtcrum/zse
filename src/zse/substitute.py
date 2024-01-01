@@ -24,7 +24,8 @@ def exchange_unique_T_sites(
 ) -> list[Atoms]:
     """
     Enumerate all unique T sites and, for each, exchange a single Si atom with a heteroatom. Multiple
-    configurations for the heteroatom are considered, and all are returned.
+    configurations for the heteroatom are considered, and all are returned. Each is charge balanced
+    with the specified cation.
 
     Only supports monovalent cations currently.
     """
