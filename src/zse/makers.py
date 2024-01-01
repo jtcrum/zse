@@ -31,7 +31,7 @@ def make_iza_zeolite(code: str) -> Atoms:
 def make_all_exchanged_zeolites(
     code: str,
     heteroatom: str,
-    cation: str | None,
+    cation: str | None = None,
     ignored_T_indices: list[int] | None = None,
 ) -> list[Atoms]:
     """
