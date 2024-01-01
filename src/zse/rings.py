@@ -19,7 +19,7 @@ from zse.ring_utilities import (
     vertex_order,
 )
 from zse.ring_validation import crum, goetzke, sastre, vertex
-from zse.utilities import center, get_osites, site_labels
+from zse.utilities import center
 
 
 def get_rings(atoms, index, validation=None, max_ring=12):
