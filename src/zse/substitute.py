@@ -82,10 +82,8 @@ def exchange_unique_T_sites(
     is specified, structures with inter-heteroatom distances less than this value will be discarded.
 
     Limitations:
+    - Unique T sites are determined without consideration of the underlying atom identity.
     - Only supports monovalent cations currently.
-    - Unique T sites are determined without consideration of the atom identity. Practically, this means
-    that exchanging a T site with a heteroatom will not increase the number of unique T sites in the
-    framework even though there are now more unique chemical environments than before.
     """
 
     def _prep_labels(d: dict, labels: list[Any]) -> None:
@@ -106,10 +104,10 @@ def exchange_unique_T_sites(
     T_info = get_T_info(zeolite, code, ignored_T_indices=ignored_T_indices)
 
     for T_label, T_indices in T_info.items():
-        T_index = T_indices[0]
+        T_index = T_indices[0]  # <-- Limitation 1
         exchanged_zeolites, ring_locations = monovalent(
             tsub(zeolite, T_index, heteroatom), T_index, cation
-        )
+        )  # <-- Limitation 2
         for j, exchanged_zeolite_ in enumerate(exchanged_zeolites):
             exchanged_zeolite = deepcopy(exchanged_zeolite_)
 
