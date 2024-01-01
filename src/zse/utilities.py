@@ -14,20 +14,7 @@ from zse.collections.framework import get_osites as get_osites_
 from zse.collections.framework import get_tsites as get_tsites_
 
 if TYPE_CHECKING:
-    from ase.atoms import Atoms
-
-
-def make_iza_zeolite(code: str) -> Atoms:
-    """
-    Make an idealized zeolite from an IZA code, populate the atoms.info
-    dictionary with the framework name, and add a labels array to the
-    atoms object.
-    """
-    zeolite = get_framework(code)
-    labels = site_labels(zeolite, code)
-    zeolite.set_array("labels", np.array(list(labels.values())))
-    zeolite.info["framework"] = code
-    return zeolite
+    pass
 
 
 def center(atoms, index):

@@ -6,10 +6,12 @@ from typing import TYPE_CHECKING
 from ase.atoms import Atoms
 
 from zse.cation import monovalent
-from zse.t_utilities import get_ratio, get_T_info,get_min_T_distance
 from zse.substitute import tsub
+from zse.t_utilities import get_min_T_distance, get_ratio, get_T_info
+
 if TYPE_CHECKING:
     from typing import Any
+
 
 def exchange_unique_T_sites(
     zeolite: Atoms,

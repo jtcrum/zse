@@ -3,8 +3,7 @@ from pathlib import Path
 from ase.io import read
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from zse.substitute import exchange_unique_T_sites
-from zse.utilities import make_iza_zeolite
+from zse.makers import make_all_exchanged_zeolites, make_iza_zeolite
 
 REF_DATA = Path(__file__).parent / Path("data")
 
@@ -18,7 +17,7 @@ def test_all_silica():
 
 
 def test_exchange_unique():
-    exchanged_zeolites = exchange_unique_T_sites("CHA", "B", "Na")
+    exchanged_zeolites = make_all_exchanged_zeolites("CHA", "B", "Na")
     assert len(exchanged_zeolites) == 4
 
     atoms = exchanged_zeolites[3]
