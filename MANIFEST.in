@@ -1,0 +1,2 @@
+graft zse
+global-exclude *.git *~ *.py[cod] *.so
