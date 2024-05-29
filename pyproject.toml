@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zeolite-simulation-environment-jcrum"
+version = "0.0.1"
+authors = [
+  { name="Jerry Crum", email="jcrum@nd.edu" },
+]
+description = "A package with functions that automate zeolite strcuture building processes"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "ase",
+    "networkx"
+]
+
+[project.urls]
+Homepage = "https://github.com/jtcrum/zse"
+Issues = "https://github.com/jtcrum/zse/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages]
+find = {}
