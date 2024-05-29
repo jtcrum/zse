@@ -58,6 +58,12 @@ This research was supported in part by the Notre Dame [Center for Research Compu
 ### Research Group
 Many thanks to all the members of the [Schneider Group](https://wfschneidergroup.github.io) who listened to me present this material over and over again, and provided input into how to make ZSE more useful.
 
-|||
-|-|-|
-|![CISTAR Logo](./examples/figures/cistar_logo.png)|![COMSEL Logo](./examples/figures/comsel_logo.png)|
+-------
+
+<table>
+    <tr>
+        <td><img src="./examples/figures/cistar_logo.png" alt="CISTAR Logo"></td>
+        <td><img src="examples/figures/comsel_logo.png" alt="COMSEL Logo"></td>
+    </tr>
+</table>
+
