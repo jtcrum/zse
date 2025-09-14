@@ -8,7 +8,7 @@ version = "0.0.1"
 authors = [
   { name="Jerry Crum", email="jcrum@nd.edu" },
 ]
-description = "A package with functions that automate zeolite strcuture building processes"
+description = "A package with functions that automate zeolite structure building processes"
 readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [
