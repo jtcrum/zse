@@ -113,7 +113,6 @@ ignore = [
     "TRY003",  # long exception messages not defined in the exception class itself
     "UP015",   # unnecessary "r" in open call
     "Q000",    # single quotes
-    "D103",    # missing docstring in public function
     "D",       # do not fight with doc for now, todo in the future
     "UP035",   # deprecated Dict and List, but keep to support python<3.10
     "UP006",   # deprecated Dict and List, but keep to support python<3.10
