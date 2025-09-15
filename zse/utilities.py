@@ -1,18 +1,27 @@
-"""
-This module contains general utilities
+"""This module contains general utilities
 to be used by other functions in ZSE.
 """
 
+import numpy as np
+from ase import Atoms
+from ase.geometry import get_distances
+
+from zse.collections.framework import framework_db, get_osites_db, get_tsites_db
+
 __all__ = ["center", "get_osites", "get_tsites", "scale_cell", "site_labels"]
 
-import numpy as np
-
-from zse.collections import framework
+SILICON_DISTANCE = 3.1
 
 
-def center(atoms, index):
-    """
-    This function will center an atoms object around an index.
+def center(atoms: Atoms, index: int) -> tuple[Atoms, np.ndarray]:
+    """Center an atoms object around an index.
+
+    Args:
+        atoms (Atoms): Atoms object to be centered.
+        index (int): Index of the atom to center around.
+
+    Returns:
+        tuple[Atoms, np.ndarray]: Centered atoms object and translation vector.
     """
     com = atoms.get_center_of_mass()
     trans = com - atoms[index].position
@@ -21,89 +30,127 @@ def center(atoms, index):
     return atoms, trans
 
 
-def get_osites(code):
-    from zse.collections.framework import get_osites
+def get_osites(code: str) -> tuple[list[str], list[int], list[int]]:
+    """Get the oxygen sites for a given zeolite framework code.
 
-    z = framework(code)
-    osites, omult = get_osites(code)
+    Args:
+        code (str): Zeolite framework code.
+
+    Returns:
+        tuple[list[str], list[int], list[int]]: A tuple containing a list of oxygen site labels,
+        a list of their multiplicities, and a list of the first oxygen atom indices for each site.
+    """
+    z = framework_db(code)
+    osites, omult = get_osites_db(code)
     oinds = [atom.index for atom in z if atom.symbol == "O"]
     index = 0
     first_os = []
-    for i, m in enumerate(omult):
+    for m in omult:
         first_os.append(oinds[index])
         index += m
     return osites, omult, first_os
 
 
-def get_tsites(code):
-    from zse.collections.framework import get_tsites
+def get_tsites(code: str) -> tuple[list[str], list[int], list[int]]:
+    """Get the T sites for a given zeolite framework code.
 
-    z = framework(code)
-    tsites, tmult = get_tsites(code)
+    Args:
+        code (str): Zeolite framework code.
+
+    Returns:
+        list: T-site labels
+        list: T-site multiplicities
+        list: the first T atom indices for each site
+    """
+    z = framework_db(code)
+    tsites, tmult = get_tsites_db(code)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
     index = 0
     first_ts = []
-    for i, m in enumerate(tmult):
+    for m in tmult:
         first_ts.append(tinds[index])
         index += m
     return tsites, tmult, first_ts
 
 
-def label_osites(atoms, code):
-    z = framework(code)
-    osites, omult, first = get_osites(code)
+def label_osites(atoms: Atoms, code: str) -> dict[int, str]:
+    """Label the oxygen sites in an atoms object based on a zeolite framework code.
+
+    Args:
+        atoms (Atoms): Atoms object containing the zeolite framework.
+        code (str): Zeolite framework code.
+
+    Returns:
+        dict[int, str]: A dictionary mapping atom indices to their corresponding oxygen site labels.
+    """
+    z = framework_db(code)
+    osites, omult, _first = get_osites(code)
 
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
+    for zc, ac in zip(zcell, acell, strict=False):
+        repeat.append(round(ac / zc))
 
     z = z.repeat(repeat)
     oinds = [atom.index for atom in z if atom.symbol == "O"]
 
     rp = np.prod(repeat)
-    Dict = {}
+    dict_ = {}
     j = 0
-    for i in range(rp):
+    for _i in range(rp):
         for s, t in enumerate(osites):
-            for q in range(omult[s]):
-                Dict[oinds[j]] = t
+            for _q in range(omult[s]):
+                dict_[oinds[j]] = t
                 j += 1
 
-    return Dict
+    return dict_
 
 
-def label_tsites(atoms, code):
-    z = framework(code)
-    tsites, tmult, first = get_tsites(code)
+def label_tsites(atoms: Atoms, code: str) -> dict[int, str]:
+    """Label the T sites in an atoms object based on a zeolite framework code.
+
+    Args:
+        atoms (Atoms): Atoms object containing the zeolite framework.
+        code (str): Zeolite framework code.
+
+    Returns:
+        dict[int, str]: A dictionary mapping atom indices to their corresponding T site labels.
+    """
+    z = framework_db(code)
+    tsites, tmult, _first = get_tsites(code)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
 
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
+    for zc, ac in zip(zcell, acell, strict=False):
+        repeat.append(round(ac / zc))
     z = z.repeat(repeat)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
 
     rp = np.prod(repeat)
-    Dict = {}
+    dict_ = {}
     j = 0
-    for i in range(rp):
+    for _ in range(rp):
         for s, t in enumerate(tsites):
-            for q in range(tmult[s]):
-                Dict[tinds[j]] = t
+            for _ in range(tmult[s]):
+                dict_[tinds[j]] = t
                 j += 1
 
-    return Dict
+    return dict_
 
 
-def scale_cell(atoms):
-    from ase.geometry import get_distances
+def scale_cell(atoms: Atoms) -> Atoms:
+    """Scale the cell of an atoms object to have a Si-Si distance of 3.1 Angstroms.
 
+    Args:
+        atoms (Atoms): Atoms object containing the zeolite framework.
+
+    Returns:
+        Atoms: Scaled atoms object.
+    """
     diff = 1
-    sil = 3.1
     mult = 1
     si = [atom.index for atom in atoms if atom.symbol == "Si"]
     zsi = atoms[si]
@@ -120,35 +167,37 @@ def scale_cell(atoms):
             masked_line = np.ma.masked_equal(line, 0.0, copy=False)
             temp.append(masked_line.min())
         silm = np.average(temp)
-        diff = abs(silm - sil)
-        mult = sil / silm
+        diff = abs(silm - SILICON_DISTANCE)
+        mult = SILICON_DISTANCE / silm
     atoms.set_cell(cell, scale_atoms=True)
 
     return atoms
 
 
-def site_labels(atoms, code):
-    """
-    This function will get the atom site labels (as defined by the IZA) for
+def site_labels(atoms: Atoms, code: str) -> dict[int, str]:
+    """Get the atom site labels (as defined by the IZA) for
     your atoms object. Be sure to remove any adsorbates from your zeolite
     framework before using this function or else it won't work. This function
     will work with T sites that have been exchanged for Al (or any atom).
 
-    atoms: atoms object containing a zeolite you want labels for
+    Args:
+        atoms (Atoms): Atoms object containing a zeolite you want labels for.
+        code (str): The zeolite framework code of your atoms object (i.e. 'CHA').
 
-    code: the zeolite framework code of your atoms object (i.e. 'CHA')
+    Returns:
+        dict[int, str]: A dictionary mapping atom indices to their corresponding site labels.
     """
 
     tdict = label_tsites(atoms, code)
     odict = label_osites(atoms, code)
     all_labels = {**tdict, **odict}
 
-    z = framework(code)
+    z = framework_db(code)
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell):
-        repeat.append(int(round(ac / zc)))
+    for zc, ac in zip(zcell, acell, strict=False):
+        repeat.append(round(ac / zc))
     z = z.repeat(repeat)
 
     zo_inds = [atom.index for atom in z if atom.symbol == "O"]
@@ -160,27 +209,23 @@ def site_labels(atoms, code):
 
     scaledp = atoms.get_scaled_positions()
 
-    Dict = {}
+    dict_ = {}
     for a in atoms:
         pa = scaledp[a.index]
         sym = a.symbol
         if sym == "O":
             diffp = poszo - pa
-            mags = []
-            for d in diffp:
-                mags.append(np.linalg.norm(d))
+            mags = [np.linalg.norm(d) for d in diffp]
             ind = mags.index(min(mags))
             ind = zo_inds[ind]
             label = all_labels[ind]
 
         if sym != "O":
             diffp = poszt - pa
-            mags = []
-            for d in diffp:
-                mags.append(np.linalg.norm(d))
+            mags = [np.linalg.norm(d) for d in diffp]
             ind = mags.index(min(mags))
             ind = zt_inds[ind]
             label = all_labels[ind]
-        Dict[a.index] = label
+        dict_[a.index] = label
 
-    return Dict
+    return dict_
