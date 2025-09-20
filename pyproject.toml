@@ -7,6 +7,7 @@ name = "zeose"
 version = "0.0.1"
 authors = [
   { name="Jerry Crum", email="jcrum@nd.edu" },
+  { name="Alex Hoffman", email="ahoffman2011@gmail.com" },
 ]
 description = "A package with functions that automate zeolite structure building processes"
 readme = "README.md"
