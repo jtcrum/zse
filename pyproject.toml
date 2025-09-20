@@ -20,7 +20,9 @@ classifiers = [
 dependencies = [
     "numpy",
     "ase",
-    "networkx"
+    "networkx",
+    "jupyter>=1.1.1",
+    "ipython>=8.37.0",
 ]
 
 # dev dependencies
@@ -125,3 +127,9 @@ ignore = [
     "RUF003",  # ambiguous characters in comments
 ]
 pydocstyle.convention = "google"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.10.6",
+    "pytest-cov>=7.0.0",
+]
