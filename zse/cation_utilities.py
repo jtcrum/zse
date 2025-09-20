@@ -1,13 +1,26 @@
-__all__ = ["add_cation", "count_rings"]
+"""Utilities for adding cations to zeolite frameworks and counting rings."""
 
 import os
+from typing import Iterable
 
 import numpy as np
 from ase import Atoms
 from ase.io import write
 
+__all__ = ["add_cation", "count_rings"]
 
-def count_rings(paths):
+
+def count_rings(paths: Iterable[str]) -> tuple[list[int], list[int], list[str]]:
+    """Count the number of rings of each size in a list of paths.
+
+    Args:
+        paths (Iterable[str]): Iterable of paths representing rings.
+
+    Returns:
+        list[int]: A list of ring sizes
+        list[int]: A list of counts for each ring size
+        list[str]: The original list of paths.
+    """
     _class = [int(len(p) / 2) for p in paths]
     paths = [x for _, x in sorted(zip(_class, paths, strict=False), reverse=True)]
     _class.sort(reverse=True)
@@ -27,17 +40,35 @@ def count_rings(paths):
 
 
 def add_cation(
-    atoms,
-    large_atoms,
-    radii,
-    index,
-    symbol,
-    paths,
-    included_rings,
-    class_count,
-    path=None,
-    bvect=None,
-):
+    atoms: Atoms,
+    large_atoms: Atoms,
+    radii: dict[str, float],
+    index: int,
+    symbol: str,
+    paths: Iterable[Iterable[int]],
+    included_rings: set[int],
+    class_count: list[int],
+    path: str | None = None,
+    bvect: np.ndarray | None = None,
+) -> tuple[list[Atoms], list[str]]:
+    """Add a cation to an atoms object at specified ring locations.
+
+    Args:
+        atoms (Atoms): The ASE Atoms object of the zeolite framework.
+        large_atoms (Atoms): The ASE Atoms object of the larger repeated framework.
+        radii (dict[str, float]): A dictionary mapping element symbols to their atomic radii.
+        index (int): The index of the atom in the Atoms object where the cation will be added.
+        symbol (str): The symbol of the cation to be added (e.g., 'Na', 'K').
+        paths (Iterable[Iterable[int]]): A list of paths representing rings in the framework.
+        included_rings (set[int]): A set of ring sizes to include for cation placement.
+        class_count (list[int]): A list of counts for each ring size class.
+        path (str | None, optional): The directory path to save POSCAR files. Defaults to None.
+        bvect (np.ndarray | None, optional): A bond vector for cation placement. Defaults to None.
+
+    Returns:
+        list[Atoms]: a list of Atoms objects with the cation added
+        list[str]: a list of location labels for each cation placement.
+    """
     traj = []
     locations = []
     for i in range(len(paths)):

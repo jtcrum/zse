@@ -1,4 +1,5 @@
-__all__ = ["divalent", "monovalent"]
+"""This module contains functions to add monovalent and divalent cations to
+zeolite frameworks. These functions are used in tbe cation_utilities module."""
 
 import os
 
@@ -13,20 +14,30 @@ from zse.rings import (
 )
 from zse.utilities import center
 
+__all__ = ["divalent", "monovalent"]
 
-def divalent(atoms, M, path=None):
-    """
-    This function will place one divalent cation into a zeolite framework that
-    contains two negative charge centers.
-    The cation is placed at each of 6 rings around each of the aluminum atoms.
-    This creates 12 structures. Depending on the placement of your Al, some of
-    the strucutres may not be unique.
+
+def divalent(atoms: Atoms, cation: str, path: str | None = None) -> list:
+    """Place one divalent cation into a zeolite framework that
+    contains two negative charge centers. The cation is placed at each of 6 rings
+    around each of the aluminum atoms. This process creates 12 structures. Depending
+    on the placement of your Al, some of the structures may not be unique.
 
     The structures will be placed in the path provided as an input.
     Format of the structures folder names are:
     D-aluminum_index-oxygen1_index,oxygen2_index.
 
     The original version of this code was written by Sichi Li in 2017.
+
+    Args:
+        atoms (Atoms): ASE Atoms object of the zeolite framework
+        cation (str): Elemental symbol of the cation you want to use, e.g., 'Ca'
+        path (str | None, optional): Path where you would like to save the structure files.
+            If not included, structure files will not be saved. Defaults to None.
+
+    Returns:
+        traj (list): ASE trajectory of all the structures generated. You can view traj
+            with ase.visualize.view.
     """
 
     total_oxygen = [atom.index for atom in atoms if atom.symbol == "O"]
@@ -53,7 +64,7 @@ def divalent(atoms, M, path=None):
                 c = totpos[aluminum[l_], :]
                 pos = a - c + b
                 tpos = pos.reshape(1, 3)
-                adsorbate = Atoms(M)
+                adsorbate = Atoms(cation)
                 adsorbate.set_positions(tpos)
                 M_lattice = atoms + adsorbate
                 traj += [M_lattice]
@@ -69,28 +80,34 @@ def divalent(atoms, M, path=None):
     return traj
 
 
-def monovalent(atoms, index, symbol, included_rings=None, path=None, bvect=None):
-    """
-    This code has been updated to place the ion inside each of the rings
-    associated with the T site. The rings are found using the rings module of
-    ZSE.
-    INPUTS:
-    atoms = ASE atoms object of the zeolite framework
-    index = Index of the t site that the cation will be associated with (int)
-    symbol = Elemental symbol of the cation you want to use, i.e. 'Na' (str)
-    code = Framework code of the zeolite you are using, i.e. 'CHA' (str)
-    included_rings (optional) = List of ints for rings you want to include
-                                if not specified all rings larger than 4-MR will
-                                be inlcuded.
-    path (optional) = Path for which you would like the structure files saved.
-                      If not included, structure files will not be saved.
-    bvect (optional) = Manually specify the bond length between the cation and
-                        atom index
-    OUTPUTS:
-    traj = ASE trajectory of all the structures generated. You can view traj
-           with ase.visualize.view.
-    locations = List of all the rings that the ion was placed in. Correlates to
-                the images in the trajectory.
+def monovalent(
+    atoms: Atoms,
+    index: int,
+    symbol: str,
+    included_rings: list[int] | None = None,
+    path: str | None = None,
+    bvect: np.ndarray | None = None,
+) -> tuple[list, list]:
+    """Place the ion inside each of the rings associated with the T-site. The rings are found using
+    the rings module of ZSE.
+
+    Args:
+        atoms (Atoms): ASE atoms object of the zeolite framework
+        index (int): Index of the T-site with which the cation will be associated
+        symbol (str): Elemental symbol of the cation you want to use, i.e. 'Na'
+        code (str): Framework code of the zeolite you are using, i.e. 'CHA'
+        included_rings (list[int] | None): List of ints for rings you want to include
+            if not specified all rings larger than 4-MR will be inlcuded.
+        path (str, optional): File path where you would like to save the structure files.
+            If not included, structure files will not be saved.
+        bvect (ndarray, optional): Manually specify the bond length between the cation and
+            atom index
+
+    Returns:
+        traj (list): ASE trajectory of all the structures generated. You can view traj
+            with ase.visualize.view.
+        locations (list): List of all the rings that the ion was placed in. Correlates to
+            the images in the trajectory.
     """
     # I will use these radii to approximate bond lengths
     radii = {chemical_symbols[i]: covalent_radii[i] for i in range(len(chemical_symbols))}
