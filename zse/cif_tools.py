@@ -139,6 +139,15 @@ def get_tsites(cif: str) -> tuple[list[str], list[int], list[int]]:
 
 
 def get_osites(cif: str) -> tuple[list[str], list[int], list[int]]:
+    """Parse the O-sites from a CIF file.
+
+    Args:
+        cif (str): Path to the CIF file.
+
+    Returns:
+        tuple[list[str], list[int], list[int]]: List of O-site labels, their
+            multiplicities, and the corresponding atom indices.
+    """
     osites = []
     opos = []
     z, alllines = fix_cif(cif)
