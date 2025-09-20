@@ -156,8 +156,7 @@ def cross_distance(atoms: Atoms, paths: list[list[int]]) -> list[list[int]]:
 
 
 def goetzke(graph: nx.Graph, index: int, cutoff: float) -> list[list[int]]:
-    """
-    Method to find all cycles that cannot be decomposed into smaller cycles
+    """Method to find all cycles that cannot be decomposed into smaller cycles
     via shortcuts. This rule and algorithm was presented by:
     K. Goetzke and H.-J. Klein (https://doi.org/10.1016/0022-3093(91)90145-V)
     Slight modifications to the algorithm have been implemented to take

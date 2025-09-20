@@ -278,11 +278,11 @@ def all_paths(graph: nx.Graph, o1: int, o2: int, index: int, path_length: int) -
     return all_paths
 
 
-def vertex_order(r: list) -> tuple[str, list]:
+def vertex_order(all_paths: list) -> tuple[str, list]:
     """Order the paths based on the oxygen pairs and their weights.
 
     Args:
-        r (list): list of lists containing the paths
+        all_paths (list): list of lists containing the paths
 
     Returns:
         ordered_v (str): string representing the ordered vertices
@@ -294,7 +294,7 @@ def vertex_order(r: list) -> tuple[str, list]:
     o_pair_counts = dd(lambda: 0)
     o_pair_weights = dd(lambda: 0)
 
-    for path in r:
+    for path in all_paths:
         if path[1] not in oxygens:
             oxygens.append(path[1])
         if path[-1] not in oxygens:
@@ -353,11 +353,20 @@ def vertex_order(r: list) -> tuple[str, list]:
     return ordered_v, new_r
 
 
-def dict_to_atoms(index_paths, atoms):
+def dict_to_atoms(index_paths: dict, atoms: Atoms) -> dict[int, list[Atoms]]:
+    """Convert a dictionary of paths (lists of indices) to a dictionary of ASE atoms objects.
+
+    Args:
+        index_paths (dict): dictionary where keys are path lengths and values are lists of paths
+        atoms (Atoms): ASE atoms object of the zeolite framework
+
+    Returns:
+        trajectories (dict): dictionary where keys are path lengths and values are lists of
+            ASE atoms objects
+    """
     trajectories = {}
     com = atoms.get_center_of_mass()
-    for length in index_paths:
-        paths = index_paths[length]
+    for length, paths in index_paths.items():
         tmp_traj = []
         for p in paths:
             tmp_atoms = paths_to_atoms(atoms, [p])
@@ -370,7 +379,22 @@ def dict_to_atoms(index_paths, atoms):
     return trajectories
 
 
-def remove_labeled_dups(index_paths, label_paths, ring_sizes, atoms):
+def remove_labeled_dups(
+    index_paths: dict, label_paths: list, ring_sizes: list, atoms: Atoms
+) -> tuple[dict, dict]:
+    """A helper function for get_orings and get_trings to remove duplicate paths based
+    on their labels.
+
+    Args:
+        index_paths (dict): dictionary where keys are path lengths and values are lists of paths
+        label_paths (list): list of lists containing the labels of the paths
+        ring_sizes (list): list of integers representing the sizes of rings to be analyzed
+        atoms (Atoms): ASE atoms object of the zeolite framework
+
+    Returns:
+        index_rings (dict): dictionary where keys are path lengths and values are lists of paths
+        label_rings (dict): dictionary where keys are path lengths and values are lists of labels
+    """
     # first make dictionaries
     label_rings = {}
     index_rings = {}
