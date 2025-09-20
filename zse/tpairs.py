@@ -1,3 +1,5 @@
+"""Get unique T-site pairs for a given zeolite framework code."""
+
 import math
 from collections import defaultdict
 
@@ -12,7 +14,20 @@ from zse.utilities import get_tsites, site_labels
 __all__ = ["get_pairs"]
 
 
-def get_pairs(code, validation=None, max_ring=12):
+def get_pairs(
+    code: str, validation: str | None = None, max_ring: int = 12
+) -> tuple[list[str], list[np.ndarray]]:
+    """Get unique T-site pairs for a given zeolite framework code.
+
+    Args:
+        code (str): Zeolite framework code.
+        validation (str | None, optional): Validation method for ring finding. Defaults to None.
+        max_ring (int, optional): Maximum ring size to consider. Defaults to 12.
+
+    Returns:
+        tuple[list[str], list[np.ndarray]]: A tuple containing a list of unique T-site pair
+            identifiers and a list of corresponding Atoms objects with substitutions.
+    """
     z = framework_db(code)
     tinds = get_tsites(code)[2]
     c, r, _ra, a = get_unique_rings(z, tinds, validation=validation, max_ring=max_ring)
