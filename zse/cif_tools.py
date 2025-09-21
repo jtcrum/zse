@@ -17,7 +17,7 @@ filepath = pkg_resources.files(__name__).joinpath(path)
 
 """
 NOTE ABOUT CIF FILE FORMATS:
-CIFs must include '_symmetry_Int_Taables_number' to be read by ASE.
+CIFs must include '_symmetry_Int_Tables_number' to be read by ASE.
 If this is not included please edit your CIF file to include this information.
 """
 
