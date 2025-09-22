@@ -79,7 +79,7 @@ def get_pairs(
                         ozl = len(z)
                         indices = np.arange(zl)
                         indices = indices.reshape(np.prod(repeat), ozl)
-                        newinds = [int(np.where(indices == ti[1])[1]) for ti in tinds]
+                        newinds = [int(np.where(indices == ti)[1]) for ti in tinds]
                         z3 = z.copy()
                         z3 = tsub(z3, newinds, "Al")
                         traj += [z3]
