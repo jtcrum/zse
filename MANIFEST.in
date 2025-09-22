@@ -1,2 +1,7 @@
+include README.md
+include LICENSE
 graft zse
-global-exclude *.git *~ *.py[cod] *.so
+include zse/collections/frameworks.db
+exclude tests/*
+exclude zse/.temp_files/*
+global-exclude *.git *~ *.py[cod] *.so __pycache__ .DS_Store
