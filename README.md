@@ -14,6 +14,14 @@ Ring finding uses graph theory implemented by NetworkX, available at: [https://n
 Numpy is also required.
 
 ## Installation
+The package can be installed from PyPI, where it is [listed as zeose](https://pypi.org/project/zeose/), using `pip` or `uv`:
+```bash
+pip install
+```
+
+The other package listed on PyPI under the name `zse` is not affiliated with this package.
+
+### Installing to contribute
 Clone this git repository,
 
 ```bash
@@ -23,11 +31,11 @@ git clone https://github.com/jtcrum/zse
 and then install it with pip:
 
 ```bash
-pip install ./zse
+pip install -e ./zse
 ```
 
 ## Current Modules
-To see how to use each of the modules, please visit [examples](/examples).
+To see how to use each of the modules, please visit [examples](/examples), which contains several Python notebooks that show how to use the tools in this repository.
 - `zse.cation`
 - `zse.cif_tools`
 - `zse.collections`
