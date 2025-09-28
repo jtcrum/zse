@@ -16,7 +16,7 @@ Numpy is also required.
 ## Installation
 The package can be installed from PyPI, where it is [listed as zeose](https://pypi.org/project/zeose/), using `pip` or `uv`:
 ```bash
-pip install
+pip install zeose
 ```
 
 The other package listed on PyPI under the name `zse` is not affiliated with this package.
