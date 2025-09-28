@@ -94,7 +94,7 @@ def get_pairs(
                             r_pair_id = "_".join(pair_inner)
                             pair_list.append(pair_id)
     pairs = []
-    for r, c in zip(ring_list, allpairlist, strict=False):
+    for r, c in zip(ring_list, allpairlist, strict=True):
         pairs.append(f"{r} | {c}")
 
     return pairs, traj

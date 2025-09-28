@@ -22,7 +22,7 @@ def count_rings(paths: Iterable[str]) -> tuple[list[int], list[int], list[str]]:
         list[str]: The original list of paths.
     """
     _class = [int(len(p) / 2) for p in paths]
-    paths = [x for _, x in sorted(zip(_class, paths, strict=False), reverse=True)]
+    paths = [x for _, x in sorted(zip(_class, paths, strict=True), reverse=True)]
     _class.sort(reverse=True)
 
     class_count = []

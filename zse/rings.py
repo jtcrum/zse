@@ -87,7 +87,7 @@ def get_rings(
 
     # convert the indices of the paths back to standard cell indices
     ring_list = [int(len(p) / 2) for p in paths]
-    tmp_paths = [x for _, x in sorted(zip(ring_list, paths, strict=False))]
+    tmp_paths = [x for _, x in sorted(zip(ring_list, paths, strict=True))]
     paths = []
     for p in tmp_paths:
         temp = [large_atoms[i].tag for i in p]
@@ -133,7 +133,7 @@ def get_unique_rings(
 
     # sort rings from smallest to largest
     ring_list = [int(len(p) / 2) for p in paths]
-    paths = [x for _, x in sorted(zip(ring_list, paths, strict=False))]
+    paths = [x for _, x in sorted(zip(ring_list, paths, strict=True))]
     ring_list.sort()
 
     ring_atoms = [paths_to_atoms(a, [p]) for p in paths]

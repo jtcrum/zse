@@ -200,8 +200,8 @@ def get_left(cl: int, s1: int, count: int, sp: dict[int, dict[int, int]]) -> lis
         try:
             if q == 1 and sp[j1][s1] == count:
                 left_options.append(j1)
-        except:  # noqa: E722
-            pass
+        except Exception as e:
+            print(e)
     return left_options
 
 
@@ -231,8 +231,8 @@ def get_right(
                 if q == 1 and sp[j2][s2] == count and sp[l_][j2] == size / 2:
                     temp.append(j2)
                     flag = True
-            except:  # noqa: E722, PERF203
-                pass
+            except Exception as e:  # noqa: PERF203
+                print(e)
         if flag:
             right_options.append(temp)
         else:
@@ -258,25 +258,25 @@ def make_path(sp: dict[int, dict[int, int]], s1: int, s2: int, size: int) -> lis
     while count > 0:
         left_temp = []
         right_temp = []
-        for left, right in zip(left_overall, right_overall, strict=False):
+        for left, right in zip(left_overall, right_overall, strict=True):
             cl = left[-1]
             cr = right[-1]
             left_options = get_left(cl, s1, count, sp)
             right_options = get_right(cr, s2, left_options, count, size, sp)
 
-            for l_, ro in zip(left_options, right_options, strict=False):
+            for l_, ro in zip(left_options, right_options, strict=True):
                 for r in ro:
                     if r != "x":
                         left_temp.append([*left, l_])
                         right_temp.append([*right, r])
         left_overall = []
         right_overall = []
-        for l_, r in zip(left_temp, right_temp, strict=False):
+        for l_, r in zip(left_temp, right_temp, strict=True):
             l1 = l_[-1]
             r1 = r[-1]
             flag = True
 
-            for l2, r2 in zip(left_overall, right_overall, strict=False):
+            for l2, r2 in zip(left_overall, right_overall, strict=True):
                 if size / 2 % 2 == 0:
                     if l1 == r2[-1] and r1 == l2[-1]:
                         flag = False
@@ -288,7 +288,7 @@ def make_path(sp: dict[int, dict[int, int]], s1: int, s2: int, size: int) -> lis
                 right_overall.append(r)
         count -= 1
     paths = []
-    for l_, r in zip(left_overall, right_overall, strict=False):
+    for l_, r in zip(left_overall, right_overall, strict=True):
         path = r + l_
         if len(path) == size:
             paths.append(path)

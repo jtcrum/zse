@@ -314,13 +314,13 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
             try:
                 k = "-".join(sorted([str(p[o[0]]), str(p[o[1]])]))
                 w.append(o_pair_weights[k])
-            except:  # noqa: E722, PERF203
-                pass
+            except Exception as e:  # noqa: PERF203
+                print(e)
         weights.append(w)
 
-    zipped_lists = zip(weights, perms, strict=False)
+    zipped_lists = zip(weights, perms, strict=True)
     sp = sorted(zipped_lists, reverse=True)
-    tuples = zip(*sp, strict=False)
+    tuples = zip(*sp, strict=True)
     weights, perms = [list(tuple) for tuple in tuples]
 
     new_r = []
@@ -336,11 +336,11 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
             counts.append(o_pair_counts[k])
             for x in o_pair_paths[k]:
                 new_r.append(x)  # noqa: PERF402
-        except:  # noqa: E722, PERF203
-            pass
+        except Exception as e:  # noqa: PERF203
+            print(e)
 
     ordered_v = []
-    for c, s in zip(counts, sizes, strict=False):
+    for c, s in zip(counts, sizes, strict=True):
         if c == 1:
             ordered_v.append(f"{int(s / 2)}")
         elif c == 0:

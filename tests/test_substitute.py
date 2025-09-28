@@ -27,7 +27,7 @@ def test_tsub_single_substitution():
 
     # Check that only one atom was changed
     differences = sum(
-        1 for old, new in zip(original_symbols, new_symbols, strict=False) if old != new
+        1 for old, new in zip(original_symbols, new_symbols, strict=True) if old != new
     )
     assert differences == 1
 
@@ -55,7 +55,7 @@ def test_tsub_multiple_substitution():
 
     # Check that exactly two atoms were changed
     differences = sum(
-        1 for old, new in zip(original_symbols, new_symbols, strict=False) if old != new
+        1 for old, new in zip(original_symbols, new_symbols, strict=True) if old != new
     )
     assert differences == 2
 
