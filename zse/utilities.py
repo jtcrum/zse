@@ -89,8 +89,8 @@ def label_osites(atoms: Atoms, code: str) -> dict[int, str]:
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell, strict=False):
-        repeat.append(round(ac / zc))
+    for zc, ac in zip(zcell, acell, strict=True):
+        repeat.append(int(round(ac / zc)))  # noqa: RUF046
 
     z = z.repeat(repeat)
     oinds = [atom.index for atom in z if atom.symbol == "O"]
@@ -124,8 +124,8 @@ def label_tsites(atoms: Atoms, code: str) -> dict[int, str]:
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell, strict=False):
-        repeat.append(round(ac / zc))
+    for zc, ac in zip(zcell, acell, strict=True):
+        repeat.append(int(round(ac / zc)))  # noqa: RUF046
     z = z.repeat(repeat)
     tinds = [atom.index for atom in z if atom.symbol != "O"]
 
@@ -196,8 +196,8 @@ def site_labels(atoms: Atoms, code: str) -> dict[int, str]:
     zcell = z.cell.cellpar()[:3]
     acell = atoms.cell.cellpar()[:3]
     repeat = []
-    for zc, ac in zip(zcell, acell, strict=False):
-        repeat.append(round(ac / zc))
+    for zc, ac in zip(zcell, acell, strict=True):
+        repeat.append(int(round(ac / zc)))  # noqa: RUF046
     z = z.repeat(repeat)
 
     zo_inds = [atom.index for atom in z if atom.symbol == "O"]
