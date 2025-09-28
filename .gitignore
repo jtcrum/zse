@@ -165,5 +165,15 @@ cython_debug/
 *.DS_Store
 ./*/.DS_Store
 
-#Emacs Files
+# Emacs Files
 _minted-readme
+
+# LLM files
+GEMINI.md
+CLAUDE.md
+
+# uv files
+uv.lock
+
+# VS Code files
+.vscode

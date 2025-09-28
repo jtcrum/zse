@@ -28,21 +28,21 @@ pip install ./zse
 
 ## Current Modules
 To see how to use each of the modules, please visit [examples](/examples).
-- zse.cation
-- zse.cif_tools
-- zse.collections
-- zse.protonate
-- zse.rings
-- zse.substitute
-- zse.tpairs
-- zse.utilities
+- `zse.cation`
+- `zse.cif_tools`
+- `zse.collections`
+- `zse.protonate`
+- `zse.rings`
+- `zse.substitute`
+- `zse.tpairs`
+- `zse.utilities`
 
 ## Contributions
 If there is something you would like to see added to this package, or if you would like to contribute, please email me at jcrum@nd.edu.
 
 ## Acknowledgments
 ### Contributors
-Sichi Li, Craig Waitt, Yujia Wang, William Schneider
+Sichi Li, Craig Waitt, Yujia Wang, William Schneider, Alex Hoffman
 
 ### Testers
 Jian Ren Lim, Elsa Koninckx
