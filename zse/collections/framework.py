@@ -4,7 +4,7 @@ from ase import Atoms
 from ase.db import connect
 
 path = "frameworks.db"
-filepath = pkg_resources.files(__name__).joinpath(path)
+filepath = pkg_resources.files(__package__).joinpath(path)
 
 
 def framework_db(code: str) -> Atoms:
