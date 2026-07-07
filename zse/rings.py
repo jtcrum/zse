@@ -13,6 +13,8 @@ from ase import Atoms
 
 from zse.ring_utilities import (
     atoms_to_graph,
+    is_valid,
+    local_rings,
     paths_to_atoms,
     remove_dups,
     remove_geometric_dups,
@@ -28,8 +30,28 @@ __all__ = [
 ]
 
 
+def _ring_candidates(graph, index: int, max_ring: int, search: str) -> list[list[int]]:
+    """Generate ring candidates at 'index' using the requested search method.
+    Shared by 'get_rings' and 'get_ordered_vertex' so they can never disagree
+    about what a "ring" is.
+    """
+    if search == "goetzke":
+        # cycles that don't contain any shortcuts
+        return goetzke(graph, index, max_ring)
+    if search == "exhaustive":
+        # every simple cycle through the site, then keep only the ones
+        # that can't be decomposed via a shortcut (same rigor as goetzke)
+        paths = local_rings(graph, index, max_ring)
+        return [p for p in paths if not is_valid(graph, p)[0]]
+    raise ValueError(f"Unknown search method: {search}")
+
+
 def get_rings(
-    atoms: Atoms, index: int, validation: str | None = None, max_ring: int = 12
+    atoms: Atoms,
+    index: int,
+    validation: str | None = None,
+    max_ring: int = 12,
+    search: str = "goetzke",
 ) -> tuple[list[int], list[list[int]], list[Atoms], Atoms]:
     """Find all the rings asssociated with an O-site or T-site in a
     zeolite framework.
@@ -47,12 +69,24 @@ def get_rings(
                     Cutoff input is required for this method
             sp: Custom shortest path method, not very reliable
             vertex: Only valid for T-sites, ensures each ring contains two
-                oxygen atoms bound to the T-site
+                oxygen atoms bound to the T-site. 'ring_list'/'paths' are returned
+                ordered per the vertex symbol convention (opposite angle-pairs
+                adjacent, shortest rings first) rather than sorted by size -- see
+                'get_ordered_vertex' for the human-readable symbol string.
             goetzke: Uses the algorithm presented by Goetzke and Klein to
                 find all the rings up to a certain cutoff size for an atom.
                 https://doi.org/10.1016/0022-3093(91)90145-V
         max_ring (int): Maximum size ring to search for. Time to compute scales with the
             maximum ring size.
+        search (str): Method used to generate ring candidates before validation. Options are:
+            goetzke (default): Only searches for cycles that are already topologically
+                irreducible (no shortcuts), per Goetzke and Klein. Fast, but the search
+                and the validity check are intertwined.
+            exhaustive: Brute-force enumeration of every simple cycle through the site, for
+                any T- or O-site of any framework, with no framework-specific tuning required
+                beyond max_ring. The candidates are filtered down to the topologically
+                irreducible ones (same rigor as goetzke) before any requested validation
+                method is applied.
 
     Returns:
         ring_list (list): The size of rings associated with the oxygen.
@@ -71,8 +105,8 @@ def get_rings(
     index = next(atom.index for atom in large_atoms if atom.tag == index)
     index_symbol = large_atoms[index].symbol
 
-    # find cycles that don't contain any shortcuts
-    paths = goetzke(graph, index, max_ring)
+    # find ring candidates
+    paths = _ring_candidates(graph, index, max_ring, search)
 
     # remove some cycles based on other validation rules
     if validation == "vertex":
@@ -85,15 +119,23 @@ def get_rings(
     if validation == "crum":
         paths = crum(graph, paths, index_symbol)
 
+    # order the paths: for vertex validation, use the vertex symbol
+    # convention (opposite angle-pairs adjacent, shortest rings first)
+    # instead of a naive size sort, since that ordering is part of what
+    # "vertex validation" means.
+    if validation == "vertex":
+        _ordered_symbol, tmp_paths = vertex_order(paths)
+    else:
+        ring_list = [int(len(p) / 2) for p in paths]
+        tmp_paths = [x for _, x in sorted(zip(ring_list, paths, strict=True))]
+
     # convert the indices of the paths back to standard cell indices
-    ring_list = [int(len(p) / 2) for p in paths]
-    tmp_paths = [x for _, x in sorted(zip(ring_list, paths, strict=True))]
     paths = []
     for p in tmp_paths:
         temp = [large_atoms[i].tag for i in p]
         paths.append(temp)
 
-    ring_list.sort()
+    ring_list = [int(len(p) / 2) for p in tmp_paths]
 
     # make a collection of atoms objects to view the rings
     ring_atoms = [paths_to_atoms(large_atoms, [p]) for p in tmp_paths]
@@ -103,7 +145,11 @@ def get_rings(
 
 
 def get_unique_rings(
-    atoms: Atoms, tsites: list[int], validation: str | None = None, max_ring: int = 12
+    atoms: Atoms,
+    tsites: list[int],
+    validation: str | None = None,
+    max_ring: int = 12,
+    search: str = "goetzke",
 ) -> tuple[list[int], list[list[int]], list[Atoms], Atoms]:
     """Find all the unique rings in a zeolite framework.
     This is accomplished by finding all the rings for each T-site, and then
@@ -113,6 +159,9 @@ def get_unique_rings(
         atoms (Atoms): The ASE atoms object of the framework to classify
         tsites (list[int]): Indices of the unique tsites in the framework
             i.e. [101] for CHA (CHA has only one unique t-site)
+        validation (str | None): See 'get_rings' for options.
+        max_ring (int): Maximum size ring to search for.
+        search (str): Ring candidate search method, see 'get_rings' for options.
 
     Returns:
         ring_list (list): List of the ring sizes found
@@ -124,7 +173,9 @@ def get_unique_rings(
 
     paths = []
     for t in tsites:
-        _c, r, _ra, a = get_rings(atoms, t, validation=validation, max_ring=max_ring)
+        _c, r, _ra, a = get_rings(
+            atoms, t, validation=validation, max_ring=max_ring, search=search
+        )
         paths += r
     paths = remove_dups(paths)
 
@@ -142,7 +193,7 @@ def get_unique_rings(
 
 
 def get_ordered_vertex(
-    atoms: Atoms, index: int, max_ring: int = 12
+    atoms: Atoms, index: int, max_ring: int = 12, search: str = "goetzke"
 ) -> tuple[str, list[list[int]], list[Atoms], Atoms]:
     """Find the vertex symbol of a given T-site, and return that
     vertex symbol with the rings listed in a specific order. This can be used
@@ -165,6 +216,7 @@ def get_ordered_vertex(
             Must be a T-site and not an oxygen.
         max_ring (int): Maximum size ring to search for. Time to compute
             scales with the maximum ring size.
+        search (str): Ring candidate search method, see 'get_rings' for options.
 
     Returns:
         ordered_vertex (str): The ordered vertex symbol for the T-site.
@@ -184,8 +236,8 @@ def get_ordered_vertex(
     index = next(atom.index for atom in large_atoms if atom.tag == index)
     index_symbol = large_atoms[index].symbol
 
-    # find cycles that don't contain any shortcuts
-    paths = goetzke(graph, index, max_ring)
+    # find ring candidates, same search used by get_rings/get_unique_rings
+    paths = _ring_candidates(graph, index, max_ring, search)
 
     # remove some cycles based on other validation rules
     if index_symbol == "O":

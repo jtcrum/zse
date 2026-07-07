@@ -41,7 +41,7 @@ def get_pairs(
         tr[int(len(p) / 2)].append(p)
         temp = []
         for x in p:
-            ind = int(np.where(index_list == x)[1])
+            ind = int(np.where(index_list == x)[1][0])
             temp.append(labels[ind])
         lr[int(len(p) / 2)].append(temp)
 
@@ -79,7 +79,7 @@ def get_pairs(
                         ozl = len(z)
                         indices = np.arange(zl)
                         indices = indices.reshape(np.prod(repeat), ozl)
-                        newinds = [int(np.where(indices == ti)[1]) for ti in tinds]
+                        newinds = [int(np.where(indices == ti)[1][0]) for ti in tinds]
                         z3 = z.copy()
                         z3 = tsub(z3, newinds, "Al")
                         traj += [z3]

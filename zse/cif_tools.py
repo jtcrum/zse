@@ -1,7 +1,7 @@
 """Tools for reading and parsing CIF files."""
 
-import importlib.resources as pkg_resources
 import os
+import tempfile
 import warnings
 
 import numpy as np
@@ -11,9 +11,6 @@ from ase.io import read
 __all__ = ["cif_site_labels", "read_cif"]
 
 warnings.filterwarnings("ignore")
-
-path = ".temp_files/"
-filepath = pkg_resources.files(__name__).joinpath(path)
 
 """
 NOTE ABOUT CIF FILE FORMATS:
@@ -82,12 +79,13 @@ def fix_cif(cif: str) -> tuple[Atoms, list[str]]:
         if "_atom_site_type_symbol" in line and "_atom_site_label" in alllines[i + 1]:
             alllines[i], alllines[i + 1] = alllines[i + 1], alllines[i]
 
-    file_name = cif.rstrip(".cif")
-    temp_file = f"{filepath}/{file_name.split('/')[-1]}_temp.cif"
-    with open(temp_file, "w") as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".cif", delete=False) as f:
         f.writelines(alllines)
-    atoms = read(temp_file)
-    os.remove(temp_file)
+        temp_file = f.name
+    try:
+        atoms = read(temp_file)
+    finally:
+        os.remove(temp_file)
     return atoms, alllines
 
 

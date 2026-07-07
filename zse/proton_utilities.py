@@ -104,21 +104,56 @@ def add_one_proton(
     return traj, locations
 
 
+def _place_proton(
+    H_lattice: Atoms, t_index: int, o_index: int, si_index: int, h_index: int, dihedral: float = 180
+) -> None:
+    """Bond a single proton (already present in H_lattice at h_index) to o_index,
+    in a tetrahedral arrangement about the T-O-Si linkage. Modifies H_lattice in place.
+    """
+    center = H_lattice.get_center_of_mass()
+    positions = H_lattice.get_positions()
+    diff = center - positions[t_index]
+    H_lattice.translate(diff)
+    H_lattice.wrap()
+    H_lattice.set_distance(int(o_index), h_index, 0.98, fix=0)
+    H_lattice.set_angle(int(t_index), int(o_index), h_index, 109.6, mask=None)
+    H_lattice.set_angle(int(si_index), int(o_index), h_index, 109.6, mask=None)
+    H_lattice.set_dihedral(int(t_index), int(o_index), int(si_index), h_index, dihedral, mask=None)
+    H_lattice.translate(-1 * diff)
+    H_lattice.wrap()
+
+
+def _clashes(
+    H_lattice: Atoms, h_index: int, bonded_o_index: int, min_distance: float = 1.0
+) -> bool:
+    """Check whether the proton at h_index sits too close to any other atom
+    (other than the oxygen it's bonded to, which is intentionally 0.98 A away).
+    """
+    others = [i for i in range(len(H_lattice)) if i not in (h_index, int(bonded_o_index))]
+    distances = H_lattice.get_distances(h_index, others, mic=True)
+    return bool(np.any(distances < min_distance))
+
+
 def add_two_protons(
     atoms: Atoms,
-    indices: int,
+    indices: list[int],
     oxygens: np.ndarray,
     silicons: np.ndarray,
     code: str,
     path: str | None = None,
 ) -> tuple[list[Atoms], list[str]]:
-    """Add two protons to the structure at specified sites.
+    """Add two protons to the structure, enumerating every combination of the
+    oxygens surrounding each of the two T-sites (e.g. 4x4=16 structures for
+    two 4-coordinate T-sites). Each proton is placed with the same tetrahedral
+    T-O-H/Si-O-H geometry used by 'add_one_proton'; combinations where a
+    proton would clash with another atom (including the other new proton) are
+    resolved by flipping that proton's dihedral to the other staggered position.
 
     Args:
         atoms (Atoms): The ASE Atoms object representing the structure.
-        indices (int): The indices of the atoms to which the protons will be added.
-        oxygens (np.ndarray): Array of indices of oxygen atoms surrounding the target atoms.
-        silicons (np.ndarray): Array of indices of silicon atoms surrounding the target atoms.
+        indices (list[int]): The indices of the two T-sites to protonate.
+        oxygens (np.ndarray): The two arrays of oxygen indices surrounding each T-site.
+        silicons (np.ndarray): The two arrays of Si indices bonded to those oxygens.
         code (str): The code representing the structure type.
         path (str | None, optional): The directory path to save the modified structures.
             Defaults to None.
@@ -130,26 +165,22 @@ def add_two_protons(
     labels = site_labels(atoms, code)
 
     adsorbate = molecule("H")
-    H_lattice = atoms + adsorbate + adsorbate
+    base_lattice = atoms + adsorbate + adsorbate
+    h1, h2 = len(atoms), len(atoms) + 1
 
-    locations = []
     traj = []
+    locations = []
     for lidx in range(4):
-        center = H_lattice.get_center_of_mass()
-        positions = atoms.get_positions()
-        diff = center - positions[indices[0]]
-        H_lattice.translate(diff)
-        H_lattice.wrap()
-        H_lattice.translate(-1 * diff)
-        H_lattice.wrap()
         for k in range(4):
-            center = H_lattice.get_center_of_mass()
-            positions = atoms.get_positions()
-            diff = center - positions[indices[1]]
-            H_lattice.translate(diff)
-            H_lattice.wrap()
-            H_lattice.translate(-1 * diff)
-            H_lattice.wrap()
+            H_lattice = base_lattice.copy()
+            _place_proton(H_lattice, indices[0], oxygens[0][lidx], silicons[0][lidx], h1)
+            _place_proton(H_lattice, indices[1], oxygens[1][k], silicons[1][k], h2)
+
+            if _clashes(H_lattice, h1, oxygens[0][lidx]) or _clashes(H_lattice, h2, oxygens[1][k]):
+                # retry the second proton at the other staggered position
+                _place_proton(
+                    H_lattice, indices[1], oxygens[1][k], silicons[1][k], h2, dihedral=0
+                )
 
             traj += [Atoms(H_lattice)]
             locations.append(f"{labels[oxygens[0][lidx]]}-{labels[oxygens[1][k]]}")

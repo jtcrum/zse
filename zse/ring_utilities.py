@@ -1,7 +1,7 @@
 """This module contains utilities to be used by the rings.py module."""
 
 from collections import defaultdict as dd
-from itertools import permutations as perm
+from itertools import combinations, permutations as perm
 
 import networkx as nx
 import numpy as np
@@ -17,6 +17,7 @@ __all__ = [
     "get_paths",
     "get_vertices",
     "is_valid",
+    "local_rings",
     "paths_to_atoms",
     "remove_dups",
     "remove_geometric_dups",
@@ -187,42 +188,71 @@ def get_vertices(graph: nx.Graph, index: int) -> list:
     return vertices
 
 
+def local_rings(graph: nx.Graph, index: int, max_ring: int) -> list[list[int]]:
+    """Enumerate every simple cycle through 'index' by joining, for each pair
+    of its neighbors, every simple path between them (with 'index' itself
+    removed from the graph) up to 'max_ring' atoms.
+
+    Unlike 'goetzke', this makes no attempt to restrict the search to
+    topologically irreducible rings: it returns every candidate cycle,
+    valid or not, so the result should be passed through a validation
+    filter (e.g. 'vertex', 'sastre', 'crum') to reach the same rigor.
+    Because it only relies on 'index' having neighbors in 'graph', it works
+    identically for O-sites and T-sites, and needs no framework-specific
+    tuning beyond 'max_ring'.
+
+    Args:
+        graph (nx.Graph): graph object representing zeolite framework in new larger cell
+        index (int): graph-node index of the T or O site to be analyzed
+        max_ring (int): size of the largest ring to be analyzed, in atoms
+            (i.e. already doubled to account for oxygens)
+
+    Returns:
+        candidates (list[list[int]]): list of candidate rings, each a list of
+            graph-node indices starting at 'index'.
+    """
+    neighbors = list(nx.neighbors(graph, index))
+    graph_no_index = graph.copy()
+    graph_no_index.remove_node(index)
+
+    candidates = []
+    for o1, o2 in combinations(neighbors, 2):
+        for p in nx.all_simple_paths(graph_no_index, o1, o2, cutoff=max_ring - 2):
+            candidates.append([index, *p])
+    return candidates
+
+
 def shortest_valid_path(
     graph: nx.Graph, o1: int, o2: int, index: int, length: int
 ) -> tuple[list, int]:
-    """Find the shortest valid path between two oxygen atoms that goes through
-    the index atom.
+    """Find the shortest valid (topologically irreducible) ring that connects
+    two oxygen atoms through the given T-site.
 
     Args:
         graph (nx.Graph): graph object representing zeolite framework in new larger cell
         o1 (int): index of the first oxygen atom
         o2 (int): index of the second oxygen atom
         index (int): index of the T atom to be analyzed
-        l (int): maximum length of the path
+        length (int): length of the original candidate ring, used as an upper bound
 
     Returns:
-        p (list): list containing the shortest valid path
-        length (int): length of the shortest valid path
+        p_idx (list): the shortest valid path found, or [1] if none exists within 'length'
+        length (int): length of the returned path
     """
     graph_ = graph.copy()
     graph_.remove_node(index)
-    flag = True
+
     l2 = 6
-    p_idx = []
-    while flag:
-        paths = nx.all_simple_paths(graph_, o1, o2, l2 - 1)
-        for path_ in paths:
-            p_idx.append(index)
-            if len(path_) == l2:
-                flag, _j = is_valid(graph, path_)
-            if not flag:
-                break
-        if flag:
-            l2 += 2
-        if l2 > length:
-            p_idx = [1]
-            break
-    return p_idx, len(p_idx)
+    while l2 <= length:
+        for path_ in nx.all_simple_paths(graph_, o1, o2, cutoff=l2 - 2):
+            if len(path_) == l2 - 1:
+                candidate = [*path_, index]
+                invalid, _j = is_valid(graph, candidate)
+                if not invalid:
+                    return candidate, len(candidate)
+        l2 += 2
+
+    return [1], 1
 
 
 def is_valid(graph: nx.Graph, path: list) -> tuple[bool, int]:
@@ -279,20 +309,28 @@ def all_paths(graph: nx.Graph, o1: int, o2: int, index: int, path_length: int) -
 
 
 def vertex_order(all_paths: list) -> tuple[str, list]:
-    """Order the paths based on the oxygen pairs and their weights.
+    """Build the long vertex symbol for a 4-connected T-site from its six
+    per-angle shortest rings, following the convention of O'Keeffe & Brese
+    (long vertex symbols, e.g. see the derivation used for RCSR symbols):
+    (a) all six angles are represented explicitly (missing ones use "*"),
+    (b) the two angles of each opposite (complementary) pair are kept
+        adjacent in the symbol,
+    (c) a subscript records how many equal-shortest rings exist at an angle,
+    (d) subject to (b), the labeling of the four oxygens is chosen so the
+        angle sequence lists the shortest rings first.
 
     Args:
-        all_paths (list): list of lists containing the paths
+        all_paths (list): list of lists containing the (already
+            shortest-per-angle) paths, as produced by 'vertex'.
 
     Returns:
-        ordered_v (str): string representing the ordered vertices
+        ordered_v (str): string representing the ordered vertex symbol
         new_r (list): list of lists containing the ordered paths
     """
     oxygens = []
     o_pair_paths = dd(list)
     o_pair_sizes = dd(int)
     o_pair_counts = dd(lambda: 0)
-    o_pair_weights = dd(lambda: 0)
 
     for path in all_paths:
         if path[1] not in oxygens:
@@ -303,23 +341,30 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
         o_pair_paths["-".join(oxys)].append(path)
         o_pair_sizes["-".join(oxys)] = len(path)
         o_pair_counts["-".join(oxys)] += 1
-        o_pair_weights["-".join(oxys)] += len(path)
+
+    # The six angles of a 4-connected vertex, arranged so each opposite
+    # (complementary) pair of angles -- (0,1)/(2,3), (0,2)/(1,3), (0,3)/(1,2) --
+    # sits in adjacent slots, per criterion (b).
+    order = [[0, 1], [2, 3], [0, 2], [1, 3], [0, 3], [1, 2]]
 
     perms = list(perm(oxygens))
     weights = []
-    order = [[0, 2], [0, 1], [1, 2], [2, 3], [3, 0], [1, 3]]
     for p in perms:
         w = []
         for o in order:
             try:
                 k = "-".join(sorted([str(p[o[0]]), str(p[o[1]])]))
-                w.append(o_pair_weights[k])
-            except Exception as e:  # noqa: PERF203
-                print(e)
+                w.append(o_pair_sizes[k])
+            except IndexError:  # noqa: PERF203
+                # site has fewer than 4 distinct oxygen neighbors; no pair at this position.
+                continue
         weights.append(w)
 
+    # Among labelings that satisfy the adjacency grouping above, pick the one
+    # whose angle sequence is lexicographically smallest, i.e. shortest rings
+    # come first, per criterion (d).
     zipped_lists = zip(weights, perms, strict=True)
-    sp = sorted(zipped_lists, reverse=True)
+    sp = sorted(zipped_lists)
     tuples = zip(*sp, strict=True)
     weights, perms = [list(tuple) for tuple in tuples]
 
@@ -327,7 +372,6 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
     counts = []
     sizes = []
     oxygens = perms[0]
-    weights = weights[0]
 
     for o in order:
         try:
@@ -336,8 +380,9 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
             counts.append(o_pair_counts[k])
             for x in o_pair_paths[k]:
                 new_r.append(x)  # noqa: PERF402
-        except Exception as e:  # noqa: PERF203
-            print(e)
+        except IndexError:  # noqa: PERF203
+            # site has fewer than 4 distinct oxygen neighbors; no pair at this position.
+            continue
 
     ordered_v = []
     for c, s in zip(counts, sizes, strict=True):
@@ -348,7 +393,6 @@ def vertex_order(all_paths: list) -> tuple[str, list]:
         else:
             ordered_v.append(f"{int(s / 2)}_{c}")
     ordered_v = "•".join(ordered_v)
-    c = [int(len(x) / 2) for x in new_r]
 
     return ordered_v, new_r
 

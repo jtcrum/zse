@@ -200,8 +200,10 @@ def get_left(cl: int, s1: int, count: int, sp: dict[int, dict[int, int]]) -> lis
         try:
             if q == 1 and sp[j1][s1] == count:
                 left_options.append(j1)
-        except Exception as e:
-            print(e)
+        except KeyError:
+            # s1 is farther than the cutoff used to build sp, so there is no
+            # length recorded from j1 to s1 -- not a valid option.
+            continue
     return left_options
 
 
@@ -231,8 +233,9 @@ def get_right(
                 if q == 1 and sp[j2][s2] == count and sp[l_][j2] == size / 2:
                     temp.append(j2)
                     flag = True
-            except Exception as e:  # noqa: PERF203
-                print(e)
+            except KeyError:  # noqa: PERF203
+                # s2 or l_ is farther than the cutoff used to build sp -- not a valid option.
+                continue
         if flag:
             right_options.append(temp)
         else:
@@ -392,7 +395,9 @@ def vertex(paths: list[list[int]]) -> list[list[int]]:
     oxygen atoms in the path. This method is used to find vertex symbol rings.
 
     Args:
-        paths (list[list[int]]): List of paths to validate.
+        paths (list[list[int]]): List of paths to validate. Does not need to be
+            pre-sorted by size; the shortest path per oxygen pair is computed
+            explicitly.
 
     Returns:
         list[list[int]]: List of valid paths.
@@ -409,7 +414,7 @@ def vertex(paths: list[list[int]]) -> list[list[int]]:
     valid_paths = []
     for v in sorted(v_paths):
         paths = v_paths[v]
-        length = len(paths[0])
+        length = min(len(p) for p in paths)
         for p in paths:
             if len(p) == length:
                 valid_paths.append(p)  # noqa: PERF401
